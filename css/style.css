@@ -5,7 +5,6 @@
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
-  touch-action: none;
 }
 
 body, html {
@@ -23,7 +22,6 @@ body, html {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  touch-action: none;
 }
 
 #game-canvas {
@@ -34,14 +32,14 @@ body, html {
   touch-action: none;
 }
 
-/* 顶部一体化防重叠 HUD 状态栏 */
+/* 顶部一体化防重叠 HUD 状态栏 (固定在顶部，高度42px) */
 #hud {
   display: none;
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  padding: 8px 12px;
+  padding: 6px 10px;
   pointer-events: none;
   z-index: 30;
 }
@@ -51,40 +49,41 @@ body, html {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1000px;
   margin: 0 auto;
-  gap: 8px;
+  gap: 6px;
 }
 
 /* 左侧：职业头像 + 血条 */
 .hud-section-left {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: rgba(15, 23, 42, 0.85);
-  padding: 5px 10px;
+  gap: 5px;
+  background: rgba(15, 23, 42, 0.88);
+  padding: 4px 8px;
   border-radius: 8px;
   border: 1px solid #334155;
   backdrop-filter: blur(6px);
   pointer-events: auto;
+  min-width: 105px;
 }
 
 .hud-avatar {
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1;
 }
 
 .hp-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .bar-bg {
-  width: 100px;
-  height: 10px;
+  width: 80px;
+  height: 8px;
   background: #334155;
-  border-radius: 5px;
+  border-radius: 4px;
   overflow: hidden;
   position: relative;
 }
@@ -97,31 +96,32 @@ body, html {
 }
 
 .hp-text {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: bold;
   color: #cbd5e1;
 }
 
-/* 中间：倒计时牌 */
+/* 中间：下班倒计时 */
 .hud-section-center {
-  background: rgba(15, 23, 42, 0.88);
+  background: rgba(15, 23, 42, 0.9);
   border: 1px solid #475569;
-  padding: 5px 12px;
-  border-radius: 16px;
-  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 12px;
   font-weight: bold;
   letter-spacing: 0.5px;
   white-space: nowrap;
   backdrop-filter: blur(6px);
+  color: #f8fafc;
 }
 
 /* 右侧：等级 + 经验 + 设置菜单齿轮 */
 .hud-section-right {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: rgba(15, 23, 42, 0.85);
-  padding: 5px 10px;
+  gap: 5px;
+  background: rgba(15, 23, 42, 0.88);
+  padding: 4px 8px;
   border-radius: 8px;
   border: 1px solid #334155;
   backdrop-filter: blur(6px);
@@ -131,7 +131,7 @@ body, html {
 .xp-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   align-items: flex-end;
 }
 
@@ -147,36 +147,37 @@ body, html {
   border: 1px solid #475569;
   color: #ffffff;
   border-radius: 6px;
-  padding: 3px 7px;
+  padding: 2px 6px;
   font-size: 12px;
   cursor: pointer;
 }
 
-/* 底部压力条 */
+/* 底部压力条 (固定在底部中央，绝不上浮重叠) */
 .hud-bottom-center {
-  position: absolute;
+  position: fixed;
   bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  background: rgba(15, 23, 42, 0.88);
-  padding: 6px 14px;
-  border-radius: 10px;
+  gap: 2px;
+  background: rgba(15, 23, 42, 0.9);
+  padding: 4px 12px;
+  border-radius: 8px;
   border: 1px solid #475569;
   backdrop-filter: blur(6px);
-  max-width: 90vw;
+  max-width: 80vw;
   pointer-events: none;
+  z-index: 25;
 }
 
 .pressure-bar-bg {
-  width: 220px;
-  max-width: 65vw;
-  height: 10px;
+  width: 180px;
+  max-width: 60vw;
+  height: 8px;
   background: #1e293b;
-  border-radius: 5px;
+  border-radius: 4px;
   overflow: hidden;
   border: 1px solid #475569;
 }
@@ -194,7 +195,7 @@ body, html {
 @keyframes pulseFast { from { filter: brightness(0.8); } to { filter: brightness(1.7); } }
 
 .pressure-text {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: bold;
   white-space: nowrap;
 }
@@ -224,10 +225,10 @@ body, html {
 #joystick-base {
   display: block;
   position: absolute;
-  bottom: 40px;
-  left: 40px;
-  width: 130px;
-  height: 130px;
+  bottom: 35px;
+  left: 35px;
+  width: 120px;
+  height: 120px;
   background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, rgba(15, 23, 42, 0.6) 70%);
   border: 2px solid rgba(56, 189, 248, 0.6);
   border-radius: 50%;
@@ -237,23 +238,23 @@ body, html {
 
 .joystick-arrow {
   position: absolute;
-  font-size: 10px;
+  font-size: 9px;
   color: rgba(255, 255, 255, 0.4);
   font-weight: bold;
 }
-.arrow-up { top: 6px; left: 50%; transform: translateX(-50%); }
-.arrow-down { bottom: 6px; left: 50%; transform: translateX(-50%); }
-.arrow-left { left: 6px; top: 50%; transform: translateY(-50%); }
-.arrow-right { right: 6px; top: 50%; transform: translateY(-50%); }
+.arrow-up { top: 5px; left: 50%; transform: translateX(-50%); }
+.arrow-down { bottom: 5px; left: 50%; transform: translateX(-50%); }
+.arrow-left { left: 5px; top: 50%; transform: translateY(-50%); }
+.arrow-right { right: 5px; top: 50%; transform: translateY(-50%); }
 
 #joystick-nub {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 54px;
-  height: 54px;
-  margin-left: -27px;
-  margin-top: -27px;
+  width: 50px;
+  height: 50px;
+  margin-left: -25px;
+  margin-top: -25px;
   background: radial-gradient(circle, #38bdf8 0%, #0284c7 100%);
   border: 2px solid #ffffff;
   border-radius: 50%;
@@ -261,30 +262,30 @@ body, html {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 13px;
   color: #ffffff;
   pointer-events: none;
 }
 
 .action-buttons {
   position: absolute;
-  bottom: 35px;
-  right: 25px;
+  bottom: 30px;
+  right: 20px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 15px;
   pointer-events: auto;
   touch-action: none;
 }
 
 .action-btn {
-  width: 72px;
-  height: 72px;
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
   border: 3px solid #38bdf8;
   background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
   color: #ffffff;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: bold;
   cursor: pointer;
   display: flex;
@@ -315,73 +316,96 @@ body, html {
   height: 100%;
   background: rgba(15, 23, 42, 0.85);
   color: #fbbf24;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* 模态框通用 */
+/* 弹窗样式与滚动修复 */
 .modal-overlay {
   display: none;
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   background: rgba(15, 23, 42, 0.88);
   backdrop-filter: blur(8px);
   z-index: 100;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: 12px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-content {
   background: #1e293b;
   border: 2px solid #475569;
   border-radius: 16px;
-  padding: 20px;
-  max-width: 680px;
+  padding: 18px 16px;
+  max-width: 650px;
   width: 100%;
   text-align: center;
   box-shadow: 0 10px 30px rgba(0,0,0,0.6);
   position: relative;
-  max-height: 90vh;
-  overflow-y: auto;
+  max-height: 85vh;
+  overflow-y: auto !important;
+  touch-action: pan-y !important;
+  -webkit-overflow-scrolling: touch !important;
 }
 
+.modal-close-x {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #94a3b8;
+  font-size: 20px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+.modal-close-x:hover { color: #ffffff; background: #334155; }
+
 .modal-title {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: bold;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   color: #fbbf24;
 }
 
 .modal-subtitle {
-  font-size: 13px;
+  font-size: 12px;
   color: #94a3b8;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
-/* 三选一卡片 */
+/* 升级卡片 */
 .card-container {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   justify-content: center;
   flex-wrap: wrap;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .upgrade-card {
   flex: 1;
-  min-width: 160px;
-  max-width: 190px;
+  min-width: 150px;
+  max-width: 180px;
   background: #0f172a;
   border: 2px solid #334155;
   border-radius: 12px;
-  padding: 14px 10px;
+  padding: 12px 8px;
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
@@ -391,7 +415,7 @@ body, html {
 }
 
 .upgrade-card:hover, .upgrade-card:active {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
   border-color: #38bdf8;
   box-shadow: 0 6px 20px rgba(56, 189, 248, 0.3);
 }
@@ -410,54 +434,52 @@ body, html {
   to { box-shadow: 0 0 22px rgba(245, 158, 11, 0.8); }
 }
 
-.card-icon { font-size: 30px; margin-bottom: 6px; }
-.card-title { font-size: 15px; font-weight: bold; color: #f8fafc; margin-bottom: 4px; }
-.card-tag { font-size: 10px; padding: 2px 6px; background: #1e293b; border-radius: 4px; color: #38bdf8; margin-bottom: 6px; }
-.card-desc { font-size: 11px; color: #cbd5e1; line-height: 1.4; }
+.card-icon { font-size: 26px; margin-bottom: 4px; }
+.card-title { font-size: 14px; font-weight: bold; color: #f8fafc; margin-bottom: 2px; }
+.card-tag { font-size: 9px; padding: 2px 6px; background: #1e293b; border-radius: 4px; color: #38bdf8; margin-bottom: 4px; }
+.card-desc { font-size: 11px; color: #cbd5e1; line-height: 1.3; }
 
 .btn {
   background: #3b82f6;
   color: #ffffff;
   border: none;
-  padding: 10px 22px;
+  padding: 9px 20px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.btn:hover, .btn:active {
-  background: #2563eb;
-  transform: scale(1.02);
-}
-
-.btn:disabled {
-  background: #475569;
-  cursor: not-allowed;
-  transform: none;
-}
-
+.btn:hover, .btn:active { background: #2563eb; transform: scale(1.02); }
+.btn:disabled { background: #475569; cursor: not-allowed; transform: none; }
 .btn-secondary { background: #475569; }
 .btn-secondary:hover { background: #64748b; }
 
-/* 角色选择卡片 */
+/* 角色选择卡片与触屏滚动适配 */
 .char-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 14px;
   text-align: left;
+  touch-action: pan-y !important;
+}
+
+@media (max-width: 600px) {
+  .char-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 .char-card {
   background: #0f172a;
   border: 2px solid #334155;
   border-radius: 12px;
-  padding: 12px;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   transition: all 0.2s;
 }
 
@@ -466,41 +488,37 @@ body, html {
   box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
 }
 
-.char-avatar { font-size: 32px; }
-.char-name { font-size: 16px; font-weight: bold; color: #f8fafc; }
-.char-title { font-size: 12px; color: #38bdf8; margin-left: 4px; font-weight: normal; }
-.char-weapon { font-size: 12px; color: #fbbf24; }
-.char-desc { font-size: 11px; color: #94a3b8; }
+.char-avatar { font-size: 28px; }
+.char-name { font-size: 15px; font-weight: bold; color: #f8fafc; }
+.char-title { font-size: 11px; color: #38bdf8; margin-left: 4px; font-weight: normal; }
+.char-weapon { font-size: 11px; color: #fbbf24; }
+.char-desc { font-size: 10px; color: #94a3b8; }
 
 .char-skill-box {
   background: #1e293b;
   border-radius: 6px;
-  padding: 8px;
-  margin-top: 4px;
+  padding: 6px 8px;
+  margin-top: 2px;
 }
-.skill-label { font-size: 11px; font-weight: bold; color: #38bdf8; }
-.skill-text { font-size: 11px; color: #cbd5e1; line-height: 1.3; }
-
-.btn-char-select {
-  margin-top: 6px;
-  padding: 6px 12px;
-  font-size: 12px;
-}
+.skill-label { font-size: 10px; font-weight: bold; color: #38bdf8; }
+.skill-text { font-size: 10px; color: #cbd5e1; line-height: 1.3; }
+.btn-char-select { margin-top: 4px; padding: 6px 10px; font-size: 11px; }
 
 /* 关卡选择卡片 */
 .stage-grid {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 14px;
   text-align: left;
+  touch-action: pan-y !important;
 }
 
 .stage-card {
   background: #0f172a;
   border: 2px solid #334155;
   border-radius: 10px;
-  padding: 12px 16px;
+  padding: 10px 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -511,9 +529,9 @@ body, html {
   box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
 }
 
-.stage-name { font-size: 15px; font-weight: bold; color: #f8fafc; }
-.stage-sub { font-size: 12px; color: #94a3b8; }
-.stage-info { font-size: 11px; color: #fbbf24; }
+.stage-name { font-size: 14px; font-weight: bold; color: #f8fafc; }
+.stage-sub { font-size: 11px; color: #94a3b8; }
+.stage-info { font-size: 10px; color: #fbbf24; }
 
 /* 主菜单 */
 #main-menu {
@@ -533,7 +551,7 @@ body, html {
 }
 
 .game-logo {
-  font-size: 36px;
+  font-size: 34px;
   font-weight: 900;
   color: #fbbf24;
   text-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
@@ -541,26 +559,27 @@ body, html {
 }
 
 .game-sub {
-  font-size: 13px;
+  font-size: 12px;
   color: #94a3b8;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 .menu-buttons {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  width: 250px;
+  gap: 9px;
+  width: 240px;
   max-width: 80vw;
 }
 
-/* 天赋树列表 */
+/* 天赋树 */
 .talent-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   text-align: left;
+  touch-action: pan-y !important;
 }
 
 .talent-item {
@@ -568,40 +587,35 @@ body, html {
   justify-content: space-between;
   align-items: center;
   background: #0f172a;
-  padding: 10px 14px;
+  padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid #334155;
 }
 
-.talent-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.talent-name { font-size: 14px; font-weight: bold; color: #f8fafc; }
-.talent-desc { font-size: 11px; color: #94a3b8; }
+.talent-info { display: flex; flex-direction: column; gap: 2px; }
+.talent-name { font-size: 13px; font-weight: bold; color: #f8fafc; }
+.talent-desc { font-size: 10px; color: #94a3b8; }
 
 /* 结算面板信息 */
 .result-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 8px;
   background: #0f172a;
-  padding: 14px;
+  padding: 12px;
   border-radius: 10px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   text-align: left;
 }
 
-.result-item { font-size: 13px; color: #cbd5e1; }
+.result-item { font-size: 12px; color: #cbd5e1; }
 .result-item b { color: #fbbf24; }
-.build-showcase { grid-column: span 2; font-size: 12px; color: #38bdf8; border-top: 1px solid #334155; padding-top: 6px; }
+.build-showcase { grid-column: span 2; font-size: 11px; color: #38bdf8; border-top: 1px solid #334155; padding-top: 6px; }
 
-/* 设置浮层 */
+/* 设置菜单 */
 .settings-menu-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 14px;
 }
