@@ -3,43 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>今天也不想上班 - 动作肉鸽战斗原型</title>
+  <title>今天也不想上班 - 动作肉鸽战斗系统 V1.3</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <div id="game-container">
-    <!-- 全局快捷功能栏 -->
-    <div class="top-quick-bar">
-      <button id="btn-toggle-controls" class="quick-btn">🎮 摇杆: 开</button>
-      <button id="btn-toggle-sound" class="quick-btn">🔊 音效</button>
-      <button id="btn-toggle-speed" class="quick-btn">⏱️ 1x</button>
-      <button id="btn-test-boss" class="quick-btn">👹 Boss</button>
-    </div>
-
     <!-- 游戏画布 -->
     <canvas id="game-canvas"></canvas>
 
-    <!-- 局内 HUD -->
+    <!-- 顶部一体化防重叠 HUD 状态栏 -->
     <div id="hud">
-      <div class="hud-top-left">
-        <div class="hp-container">
-          <span style="font-size:11px; font-weight:bold;">HP</span>
-          <div class="bar-bg">
-            <div id="hud-hp-fill" class="hp-fill"></div>
+      <div class="hud-top-bar">
+        <!-- 左侧：头像与生命 -->
+        <div class="hud-section-left">
+          <span id="hud-avatar" class="hud-avatar">👨‍💼</span>
+          <div class="hp-wrapper">
+            <div class="bar-bg">
+              <div id="hud-hp-fill" class="hp-fill"></div>
+            </div>
+            <span id="hud-hp-text" class="hp-text">120 / 120</span>
           </div>
-          <span id="hud-hp-text" style="font-size:11px; font-weight:bold;">100 / 100</span>
+        </div>
+
+        <!-- 中间：下班倒计时 -->
+        <div id="hud-time" class="hud-section-center">00:00 / 08:00</div>
+
+        <!-- 右侧：等级与经验 + 设置齿轮 -->
+        <div class="hud-section-right">
+          <div class="xp-wrapper">
+            <span id="hud-level" style="font-size:11px; font-weight:bold; color:#38bdf8;">Lv.1</span>
+            <div class="bar-bg" style="width: 70px;">
+              <div id="hud-xp-fill" class="xp-fill"></div>
+            </div>
+          </div>
+          <button id="btn-open-settings" class="btn-menu-icon">⚙️</button>
         </div>
       </div>
 
-      <div id="hud-time" class="hud-top-center">00:00 / 08:00</div>
-
-      <div class="hud-top-right">
-        <span id="hud-level" style="font-size:12px; font-weight:bold; color:#38bdf8;">Lv.1</span>
-        <div class="bar-bg" style="width: 80px;">
-          <div id="hud-xp-fill" class="xp-fill"></div>
-        </div>
-      </div>
-
+      <!-- 底部压力条 -->
       <div class="hud-bottom-center">
         <div class="pressure-bar-bg">
           <div id="hud-pressure-fill" class="pressure-fill"></div>
@@ -48,27 +49,22 @@
       </div>
     </div>
 
-    <!-- 手机端虚拟触控：左侧半屏滑动摇杆 + 右侧独立技能/闪避按钮 -->
+    <!-- 手机端虚拟触控 -->
     <div id="mobile-controls">
-      <!-- 左半屏触控响应层 -->
       <div id="joystick-zone">
-        <!-- 始终常驻底座 -->
         <div id="joystick-base">
           <span class="joystick-arrow arrow-up">▲</span>
           <span class="joystick-arrow arrow-down">▼</span>
           <span class="joystick-arrow arrow-left">◀</span>
           <span class="joystick-arrow arrow-right">▶</span>
-          <div id="joystick-nub">
-            <span>🕹️</span>
-          </div>
+          <div id="joystick-nub"><span>🕹️</span></div>
         </div>
       </div>
 
-      <!-- 右侧动作按键 -->
       <div class="action-buttons">
         <button id="btn-skill" class="action-btn">
           <span style="font-size: 20px;">🔥</span>
-          <span style="font-size: 11px;">疯狂输出</span>
+          <span style="font-size: 11px;">职业技能</span>
         </button>
         <button id="btn-dodge" class="action-btn btn-dodge-style">
           <span style="font-size: 20px;">💨</span>
@@ -80,11 +76,48 @@
     <!-- 主菜单 -->
     <div id="main-menu">
       <div class="game-logo">今天也不想上班</div>
-      <div class="game-sub">8分钟办公室动作肉鸽 · Build构筑与高压爆发</div>
+      <div class="game-sub">8分钟办公室动作肉鸽 · Build构筑与高压爆发 (V1.3)</div>
       <div class="menu-buttons">
         <button id="btn-start-game" class="btn" style="padding: 12px 24px; font-size: 16px;">🚀 开始下班 (进入游戏)</button>
+        <button id="btn-open-characters" class="btn btn-secondary">🎭 职业角色 (小陈/阿伟/莉莉/小张)</button>
+        <button id="btn-open-stages" class="btn btn-secondary">🏢 关卡选择 (星期一/二/三)</button>
         <button id="btn-open-talents" class="btn btn-secondary">📋 局外天赋 (提升打工属性)</button>
-        <button id="btn-open-guide" class="btn btn-secondary">📖 职场生存指南 (操作说明)</button>
+        <button id="btn-open-guide" class="btn btn-secondary">📖 职场生存指南 (操作与武器说明)</button>
+      </div>
+    </div>
+
+    <!-- 角色选择弹窗 -->
+    <div id="character-modal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-title">🎭 选择出战角色</div>
+        <div class="modal-subtitle">每个角色拥有独特的初始武器、被动天赋与强力大招</div>
+        <div id="character-cards-container" class="char-grid"></div>
+        <button id="btn-close-characters" class="btn">确定选择</button>
+      </div>
+    </div>
+
+    <!-- 关卡选择弹窗 -->
+    <div id="stage-modal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-title">🏢 选择挑战关卡</div>
+        <div class="modal-subtitle">不同工作日面临不同职场危机与怪物配置</div>
+        <div id="stage-cards-container" class="stage-grid"></div>
+        <button id="btn-close-stages" class="btn">确定关卡</button>
+      </div>
+    </div>
+
+    <!-- 快捷设置与调试弹窗 -->
+    <div id="settings-menu-modal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-title">⚙️ 游戏设置与调试</div>
+        <div class="settings-menu-list">
+          <button id="btn-toggle-sound" class="btn btn-secondary">🔊 音效: 开</button>
+          <button id="btn-toggle-speed" class="btn btn-secondary">⏱️ 游戏速度: 1x</button>
+          <button id="btn-toggle-controls" class="btn btn-secondary">🎮 虚拟摇杆: 开</button>
+          <button id="btn-test-boss" class="btn btn-secondary" style="color: #ef4444;">👹 一键召唤主管Boss (测试)</button>
+          <button id="btn-pause-from-settings" class="btn">摸鱼暂停游戏</button>
+        </div>
+        <button id="btn-close-settings" class="btn btn-secondary">关闭</button>
       </div>
     </div>
 
@@ -92,7 +125,7 @@
     <div id="levelup-modal" class="modal-overlay">
       <div class="modal-content">
         <div class="modal-title">🎉 工作能力提升！</div>
-        <div class="modal-subtitle">选择一项工作技能或进化武器</div>
+        <div class="modal-subtitle">选择一项工作技能或进化超级武器</div>
         <div id="levelup-cards" class="card-container"></div>
         <button id="levelup-reroll-btn" class="btn btn-secondary">刷新选项 (1次免费)</button>
       </div>
@@ -171,25 +204,21 @@
     <!-- 玩法指南弹窗 -->
     <div id="guide-modal" class="modal-overlay">
       <div class="modal-content" style="text-align: left;">
-        <div class="modal-title" style="text-align: center;">📖 职场生存指南</div>
-        <div style="font-size: 13px; line-height: 1.7; color: #cbd5e1; margin-bottom: 20px;">
-          <p><b>【操作说明】</b></p>
-          <p>• <b>移动：</b> 手机端直接滑动左下角虚拟摇杆（或直接触摸左半屏幕滑动）；PC端使用 <code>WASD</code> 或 <code>方向键</code>。</p>
-          <p>• <b>闪避：</b> 点击右下角 <code>摸鱼闪避</code> 按钮（PC端按 <code>Space 空格</code>）。在受击判定瞬间闪避触发【完美闪避】（慢动作 + 下击必暴击 + 减压）！</p>
-          <p>• <b>主动技能：</b> 点击右下角 <code>疯狂输出</code> 按钮（PC端按 <code>E / Shift</code>），3秒内攻速+70%！</p>
-          <p>• <b>普通攻击：</b> 全自动锁定范围内敌人，无需手动瞄准。</p>
+        <div class="modal-title" style="text-align: center;">📖 职场生存与武器指南</div>
+        <div style="font-size: 12px; line-height: 1.7; color: #cbd5e1; margin-bottom: 16px;">
+          <p><b>【六大核心武器】</b></p>
+          <p>• <b>机械键盘：</b> 远程高频发射键帽，升级加弹道与穿透。进化：<b>祖安机械键盘</b>（连锁“？？？”爆炸）。</p>
+          <p>• <b>马克杯：</b> 环绕身体绞杀敌人。进化：<b>无限续杯</b>（周期产生4米咖啡海啸冲击波）。</p>
+          <p>• <b>辞职信：</b> 大范围投掷重炮。进化：<b>辞职报告</b>（全屏最密集处巨型辞职报告轰炸）。</p>
+          <p>• <b>降噪耳机：</b> 360° 全屏声波脉冲，穿透击退全怪。进化：<b>降噪核爆耳机</b>（震碎敌方弹道）。</p>
+          <p>• <b>养生水杯：</b> 投掷水杯落地生成持续5秒的烫水水洼。进化：<b>高压八杯水领域</b>（全场暴雨回血）。</p>
+          <p>• <b>快充充电线：</b> 1秒电鞭近战扇形横扫。进化：<b>超导快充高压鞭</b>（全屏超导雷击+电网）。</p>
           <br>
-          <p><b>【压力值机制 (0-100)】</b></p>
-          <p>• 受击增加压力，脱战20秒后自动降压。</p>
-          <p>• <b>30-59 (烦躁)：</b> 攻速 +8%</p>
-          <p>• <b>60-79 (暴躁)：</b> 攻速 +12%，伤害 +15%</p>
-          <p>• <b>80-99 (我要辞职)：</b> 攻速 +18%，伤害 +30%，暴击率 +12%！</p>
-          <p>• <b>100 (崩溃)：</b> 持续4秒每秒扣除4%生命！谨慎控制压力！</p>
-          <br>
-          <p><b>【三大超级武器进化配方】</b></p>
-          <p>• <b>祖安机械键盘：</b> 机械键盘Lv5 + 加班咖啡Lv3 + 双屏办公Lv3</p>
-          <p>• <b>无限续杯：</b> 马克杯Lv5 + 工位护盾Lv3 + 加班咖啡Lv2</p>
-          <p>• <b>辞职报告：</b> 辞职信Lv5 + 我不干了Lv3 + KPILv2</p>
+          <p><b>【四大职业特性】</b></p>
+          <p>• <b>小陈 (运营)：</b> 升级加速摸鱼；主动【疯狂输出】攻速+80%。</p>
+          <p>• <b>阿伟 (开发)：</b> 击杀引爆内存代码；主动【系统崩溃】全屏冻结+高额雷击。</p>
+          <p>• <b>莉莉 (设计)：</b> 天生超高暴击；主动【改稿风暴】调色盘旋风绞杀全场。</p>
+          <p>• <b>小张 (实习)：</b> 经验获取+40%，极高概率出稀有技能；主动【假装很忙】隐身无敌洒咖啡豆。</p>
         </div>
         <div style="text-align: center;">
           <button id="btn-close-guide" class="btn">我明白了</button>
