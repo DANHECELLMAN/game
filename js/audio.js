@@ -1,6 +1,5 @@
 /**
- * 《今天也不想上班》- Web Audio API 音频合成系统
- * 无需外部音频文件，纯代码合成打击、技能、警报与背景音乐
+ * 《今天也不想上班》- Web Audio API 音频合成系统 (V1.3 升级版)
  */
 
 class SoundSystem {
@@ -84,7 +83,6 @@ class SoundSystem {
     if (this.muted || !this.ctx) return;
     try {
       const now = this.ctx.currentTime;
-      // 白噪音 + 低频方波
       const bufferSize = this.ctx.sampleRate * (isLarge ? 0.35 : 0.2);
       const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
       const data = buffer.getChannelData(0);
@@ -112,7 +110,77 @@ class SoundSystem {
     } catch (e) {}
   }
 
-  // 4. 受伤音效
+  // 4. 耳机声波脉冲音效 (新武器)
+  playSonicWave(isEvo = false) {
+    if (this.muted || !this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(isEvo ? 140 : 260, now);
+      osc.frequency.exponentialRampToValueAtTime(isEvo ? 40 : 60, now + 0.25);
+
+      gain.gain.setValueAtTime(isEvo ? 0.45 : 0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.25);
+    } catch (e) {}
+  }
+
+  // 5. 水杯碎裂与水泼地音效 (新武器)
+  playCupShatter(isEvo = false) {
+    if (this.muted || !this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      // 玻璃碎裂高频 + 水花
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(1800 + Math.random() * 400, now);
+      osc.frequency.exponentialRampToValueAtTime(300, now + 0.15);
+
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.15);
+    } catch (e) {}
+  }
+
+  // 6. 充电线电击挥舞音效 (新武器)
+  playElectricWhip(isEvo = false) {
+    if (this.muted || !this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(isEvo ? 900 : 650, now);
+      osc.frequency.exponentialRampToValueAtTime(120, now + 0.12);
+
+      gain.gain.setValueAtTime(isEvo ? 0.35 : 0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.12);
+    } catch (e) {}
+  }
+
+  // 7. 受伤音效
   playHurt() {
     if (this.muted || !this.ctx) return;
     try {
@@ -135,7 +203,7 @@ class SoundSystem {
     } catch (e) {}
   }
 
-  // 5. 闪避风声
+  // 8. 闪避风声
   playDodge() {
     if (this.muted || !this.ctx) return;
     try {
@@ -159,7 +227,7 @@ class SoundSystem {
     } catch (e) {}
   }
 
-  // 6. 完美闪避音效 (慢动作清脆晶莹音)
+  // 9. 完美闪避音效
   playPerfectDodge() {
     if (this.muted || !this.ctx) return;
     try {
@@ -182,7 +250,7 @@ class SoundSystem {
     } catch (e) {}
   }
 
-  // 7. 经验拾取音
+  // 10. 经验拾取音
   playXp() {
     if (this.muted || !this.ctx) return;
     try {
@@ -205,12 +273,12 @@ class SoundSystem {
     } catch (e) {}
   }
 
-  // 8. 升级音效
+  // 11. 升级音效
   playLevelUp() {
     if (this.muted || !this.ctx) return;
     try {
       const now = this.ctx.currentTime;
-      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      const notes = [523.25, 659.25, 783.99, 1046.50];
       notes.forEach((freq, i) => {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
@@ -230,7 +298,7 @@ class SoundSystem {
     } catch (e) {}
   }
 
-  // 9. 崩溃报警音
+  // 12. 崩溃报警音
   playCollapseAlarm() {
     if (this.muted || !this.ctx) return;
     try {
@@ -254,7 +322,7 @@ class SoundSystem {
     } catch (e) {}
   }
 
-  // 10. 高压力心跳
+  // 13. 高压力心跳
   playHeartbeat() {
     if (this.muted || !this.ctx) return;
     const now = Date.now();
@@ -281,7 +349,7 @@ class SoundSystem {
     } catch (e) {}
   }
 
-  // 11. Boss警告汽笛
+  // 14. Boss警告汽笛
   playBossWarning() {
     if (this.muted || !this.ctx) return;
     try {
@@ -306,7 +374,7 @@ class SoundSystem {
     } catch (e) {}
   }
 
-  // 12. 胜利通关欢呼
+  // 15. 胜利通关欢呼
   playVictory() {
     if (this.muted || !this.ctx) return;
     try {
@@ -330,7 +398,7 @@ class SoundSystem {
     } catch (e) {}
   }
 
-  // 13. UI点击
+  // 16. UI点击
   playClick() {
     if (this.muted || !this.ctx) return;
     try {
@@ -352,7 +420,7 @@ class SoundSystem {
     } catch (e) {}
   }
 
-  // 14. 简单BGM节奏循环生成器
+  // 17. 简单BGM节奏循环生成器
   startBgm() {
     if (this.muted || !this.ctx || this.bgmPlaying) return;
     this.bgmPlaying = true;

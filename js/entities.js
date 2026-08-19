@@ -1,9 +1,9 @@
 /**
  * 《今天也不想上班》- 实体系统 (Player, Enemies, Boss, Weapons, Projectiles, Drops, VFX)
- * V1.2 - 深度优化：修复咖啡卡死Bug、重构经验与子弹视觉差异、实现群体分离与包围环绕AI
+ * V1.3 升级版 - 支持4大职业特性、6大武器（耳机声波、水杯水洼、充电线电鞭等）与强化AOE
  */
 
-import { M_TO_PX, PLAYER_BASE, PRESSURE_STAGES, WEAPONS, SKILLS, ARTIFACTS, NORMAL_ENEMIES, ELITES, BOSS_CONFIG } from './constants.js';
+import { M_TO_PX, PLAYER_BASE, PRESSURE_STAGES, WEAPONS, SKILLS, ARTIFACTS, NORMAL_ENEMIES, ELITES, BOSS_CONFIG, CHARACTERS } from './constants.js';
 import { sound } from './audio.js';
 
 // 伤害与回复飘字
@@ -54,7 +54,7 @@ export class DamageNumber {
   }
 }
 
-// 提示飘字（如“摸鱼成功”、“辞职状态”、“崩！”）
+// 提示飘字
 export class FloatingText {
   constructor(x, y, text, color = "#fbbf24", size = 16) {
     this.x = x;
@@ -97,7 +97,7 @@ export class Particle {
     this.size = size;
     this.life = life;
     this.maxLife = life;
-    this.shape = shape; // "circle", "spark", "square"
+    this.shape = shape; // "circle", "spark", "square", "lightning"
   }
 
   update(dt) {
@@ -133,7 +133,7 @@ export class Particle {
   }
 }
 
-// 掉落物类 (全面重构：经验为立体发光菱形晶体，与子弹彻底区分；咖啡杯带热气；神器带光环)
+// 掉落物
 export class DropItem {
   constructor(x, y, type, value = 1) {
     this.x = x;
@@ -143,8 +143,6 @@ export class DropItem {
     this.radius = type === 'punch_card' ? 18 : (type === 'artifact' ? 16 : (type === 'coffee' ? 14 : (type === 'big_xp' ? 12 : 9)));
     this.alive = true;
     this.animTime = Math.random() * Math.PI * 2;
-    this.isSucked = false;
-    this.steamParticles = [];
   }
 
   update(dt, player, game = null) {
@@ -153,14 +151,12 @@ export class DropItem {
     const dy = player.y - this.y;
     const dist = Math.hypot(dx, dy);
 
-    // 拾取磁吸判定
+    // 拾取半径判定
     if (dist < player.pickupRadius || this.type === 'punch_card') {
-      this.isSucked = true;
       const speed = player.pickupSpeed * (this.type === 'punch_card' ? 1.5 : 1.2);
       this.x += (dx / dist) * speed * dt;
       this.y += (dy / dist) * speed * dt;
 
-      // 磁吸拖尾微粒子
       if (Math.random() < 0.35 && game) {
         const trailColor = this.type === 'xp' ? '#38bdf8' : (this.type === 'big_xp' ? '#fbbf24' : '#34d399');
         game.particles.push(new Particle(this.x, this.y, (Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20, trailColor, 3, 0.25));
@@ -179,52 +175,34 @@ export class DropItem {
     const drawY = this.y + bob;
     const rot = this.animTime * 0.8;
 
-    // 1. 普通工作经验：设计为立体旋转发光菱形晶石（与圆形子弹截然不同）
     if (this.type === 'xp') {
       ctx.translate(this.x, drawY);
       ctx.rotate(rot);
-
-      // 外发光
       ctx.shadowColor = "#38bdf8";
       ctx.shadowBlur = 8;
-
-      // 菱形宝石
       ctx.fillStyle = "#0284c7";
       ctx.beginPath();
-      ctx.moveTo(0, -9);
-      ctx.lineTo(7, 0);
-      ctx.lineTo(0, 9);
-      ctx.lineTo(-7, 0);
+      ctx.moveTo(0, -9); ctx.lineTo(7, 0); ctx.lineTo(0, 9); ctx.lineTo(-7, 0);
       ctx.closePath();
       ctx.fill();
 
-      // 宝石内高光面
       ctx.fillStyle = "#7dd3fc";
       ctx.beginPath();
-      ctx.moveTo(0, -9);
-      ctx.lineTo(4, 0);
-      ctx.lineTo(0, 4);
-      ctx.lineTo(-4, 0);
+      ctx.moveTo(0, -9); ctx.lineTo(4, 0); ctx.lineTo(0, 4); ctx.lineTo(-4, 0);
       ctx.closePath();
       ctx.fill();
 
-      // 中心晶点
       ctx.fillStyle = "#ffffff";
       ctx.beginPath();
       ctx.arc(0, 0, 2, 0, Math.PI * 2);
       ctx.fill();
-    }
-    // 2. 大经验包：金色档案夹 + 闪烁星芒
-    else if (this.type === 'big_xp') {
+    } else if (this.type === 'big_xp') {
       ctx.shadowColor = "#fbbf24";
       ctx.shadowBlur = 14;
-
-      // 金色发光八角星底座
       ctx.fillStyle = "#f59e0b";
       ctx.beginPath();
       ctx.arc(this.x, drawY, 11, 0, Math.PI * 2);
       ctx.fill();
-
       ctx.strokeStyle = "#ffffff";
       ctx.lineWidth = 1.5;
       ctx.stroke();
@@ -234,13 +212,9 @@ export class DropItem {
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("EXP+", this.x, drawY);
-    }
-    // 3. 咖啡提神包：热气腾腾的绿边马克杯 + 绿色加血光环
-    else if (this.type === 'coffee') {
+    } else if (this.type === 'coffee') {
       ctx.shadowColor = "#34d399";
       ctx.shadowBlur = 12;
-
-      // 绿色圆环底座
       ctx.fillStyle = "rgba(16, 185, 129, 0.25)";
       ctx.strokeStyle = "#10b981";
       ctx.lineWidth = 1.5;
@@ -254,13 +228,10 @@ export class DropItem {
       ctx.textBaseline = "middle";
       ctx.fillText("☕", this.x, drawY);
 
-      // 顶部飘逸小加号
       ctx.fillStyle = "#34d399";
       ctx.font = "bold 10px Arial";
       ctx.fillText("+HP", this.x, drawY - 14);
-    }
-    // 4. 神器宝箱：华丽紫金盲盒
-    else if (this.type === 'artifact') {
+    } else if (this.type === 'artifact') {
       ctx.shadowColor = "#a855f7";
       ctx.shadowBlur = 16;
       ctx.fillStyle = "rgba(168, 85, 247, 0.3)";
@@ -272,9 +243,7 @@ export class DropItem {
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("🎁", this.x, drawY);
-    }
-    // 5. 下班卡：金色准点下班卡片
-    else if (this.type === 'punch_card') {
+    } else if (this.type === 'punch_card') {
       ctx.shadowColor = "#fbbf24";
       ctx.shadowBlur = 24;
       ctx.fillStyle = "#f59e0b";
@@ -294,7 +263,7 @@ export class DropItem {
   }
 }
 
-// 弹道类（区分主角武器按键/报告与敌方企业邮件/废纸扇形/Boss大招）
+// 弹道类
 export class Projectile {
   constructor(options) {
     this.x = options.x;
@@ -308,7 +277,7 @@ export class Projectile {
     this.hitEnemies = new Set();
     this.isEvo = options.isEvo || false;
     this.isEnemy = options.isEnemy || false;
-    this.type = options.type || "keycap"; // "keycap", "resignation_bomb", "mail_bullet", "paper_fan", "boss_bullet"
+    this.type = options.type || "keycap"; // "keycap", "resignation_bomb", "water_cup_lob", "mail_bullet", "paper_fan", "boss_bullet"
     this.color = options.color || "#38bdf8";
     this.targetX = options.targetX;
     this.targetY = options.targetY;
@@ -324,18 +293,17 @@ export class Projectile {
 
     if (this.life <= 0) {
       this.alive = false;
-      if (this.type === "resignation_bomb" && this.onExplode) {
+      if ((this.type === "resignation_bomb" || this.type === "water_cup_lob") && this.onExplode) {
         this.onExplode(this.x, this.y);
       }
       return;
     }
 
-    if (this.type === "resignation_bomb") {
-      // 辞职信飞向目标点
+    if (this.type === "resignation_bomb" || this.type === "water_cup_lob") {
       const dx = this.targetX - this.x;
       const dy = this.targetY - this.y;
       const dist = Math.hypot(dx, dy);
-      const speed = 400;
+      const speed = 420;
       if (dist < speed * dt) {
         this.x = this.targetX;
         this.y = this.targetY;
@@ -354,11 +322,9 @@ export class Projectile {
 
   draw(ctx) {
     ctx.save();
-    // 1. 主角机械键盘键帽 (立体按键形状，带敲击火花，进化版为红黑狂暴键帽)
     if (this.type === "keycap") {
       ctx.translate(this.x, this.y);
-      const angle = Math.atan2(this.vy, this.vx);
-      ctx.rotate(angle);
+      ctx.rotate(Math.atan2(this.vy, this.vx));
 
       ctx.fillStyle = this.isEvo ? "#dc2626" : "#f1f5f9";
       ctx.strokeStyle = this.isEvo ? "#991b1b" : "#64748b";
@@ -368,24 +334,26 @@ export class Projectile {
       ctx.fill();
       ctx.stroke();
 
-      // 键帽中心文字
       ctx.fillStyle = this.isEvo ? "#fef08a" : "#0f172a";
       ctx.font = "bold 9px 'Segoe UI', Arial";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(this.isEvo ? "!" : "K", 0, 0);
-    }
-    // 2. 主角辞职信投掷物 (带公章的白色公文封)
-    else if (this.type === "resignation_bomb") {
+    } else if (this.type === "resignation_bomb") {
       ctx.translate(this.x, this.y);
       ctx.rotate(this.rotation);
       ctx.font = "20px Arial";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("📄", 0, 0);
-    }
-    // 3. 邮件怪子弹 (蓝色企业邮件信封 ✉️，带电子数据拖尾)
-    else if (this.type === "mail_bullet" || (this.isEnemy && this.type === "enemy_bullet")) {
+    } else if (this.type === "water_cup_lob") {
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.rotation);
+      ctx.font = "18px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(this.isEvo ? "🪣" : "🫗", 0, 0);
+    } else if (this.type === "mail_bullet" || (this.isEnemy && this.type === "enemy_bullet")) {
       ctx.translate(this.x, this.y);
       ctx.rotate(Math.atan2(this.vy, this.vx));
 
@@ -397,15 +365,10 @@ export class Projectile {
       ctx.lineWidth = 1;
       ctx.strokeRect(-7, -4, 14, 8);
 
-      // 信封折角
       ctx.beginPath();
-      ctx.moveTo(-7, -4);
-      ctx.lineTo(0, 1);
-      ctx.lineTo(7, -4);
+      ctx.moveTo(-7, -4); ctx.lineTo(0, 1); ctx.lineTo(7, -4);
       ctx.stroke();
-    }
-    // 4. 打印机废纸扇形弹幕 (散乱A4废纸，带旋转)
-    else if (this.type === "paper_fan") {
+    } else if (this.type === "paper_fan") {
       ctx.translate(this.x, this.y);
       ctx.rotate(this.rotation);
       ctx.fillStyle = "#f8fafc";
@@ -413,16 +376,7 @@ export class Projectile {
       ctx.lineWidth = 1;
       ctx.fillRect(-6, -8, 12, 16);
       ctx.strokeRect(-6, -8, 12, 16);
-
-      ctx.strokeStyle = "#cbd5e1";
-      ctx.beginPath();
-      ctx.moveTo(-4, -4); ctx.lineTo(4, -4);
-      ctx.moveTo(-4, 0); ctx.lineTo(4, 0);
-      ctx.moveTo(-4, 4); ctx.lineTo(4, 4);
-      ctx.stroke();
-    }
-    // 5. Boss 大招弹幕 (巨型红色公章弹幕 💮)
-    else if (this.type === "boss_bullet") {
+    } else if (this.type === "boss_bullet") {
       ctx.translate(this.x, this.y);
       ctx.rotate(this.rotation);
       ctx.fillStyle = "#dc2626";
@@ -447,7 +401,7 @@ export class Projectile {
   }
 }
 
-// AOE区域（离职情绪水洼、会议减速圈、Boss文件雨预警红圈）
+// AOE区域类 (支持声波脉冲、水杯水洼、电弧横扫、调色盘风暴)
 export class AOEZone {
   constructor(options) {
     this.x = options.x;
@@ -455,14 +409,18 @@ export class AOEZone {
     this.radius = options.radius || 50;
     this.duration = options.duration || 2.0;
     this.maxDuration = this.duration;
-    this.type = options.type;
+    this.type = options.type; // "resignation_pool", "water_puddle", "sonic_wave", "electric_whip", "meeting_slow", "boss_warning_circle", "hr_line_warning"
     this.damage = options.damage || 0;
     this.tickInterval = options.tickInterval || 0.5;
     this.tickTimer = 0;
-    this.slowPct = options.slowPct || 0.35;
+    this.slowPct = options.slowPct || 0;
     this.alive = true;
     this.color = options.color || "rgba(239, 68, 68, 0.3)";
     this.onComplete = options.onComplete || null;
+    this.isEvo = options.isEvo || false;
+    this.angle = options.angle || 0;
+    this.arc = options.arc || Math.PI * 2;
+    this.hitEnemies = new Set();
     this.lineStartX = options.lineStartX;
     this.lineStartY = options.lineStartY;
     this.lineEndX = options.lineEndX;
@@ -477,7 +435,49 @@ export class AOEZone {
       return;
     }
 
-    if (this.type === "resignation_pool") {
+    // 1. 声波脉冲：向外极速扩散并一次性击退穿透全怪
+    if (this.type === "sonic_wave") {
+      const progress = 1 - (this.duration / this.maxDuration);
+      const curRadius = this.radius * progress;
+      game.enemies.forEach(enemy => {
+        if (enemy.alive && !this.hitEnemies.has(enemy)) {
+          const dist = Math.hypot(enemy.x - this.x, enemy.y - this.y);
+          if (dist <= curRadius + enemy.radius) {
+            this.hitEnemies.add(enemy);
+            enemy.takeDamage(this.damage, false, game, { x: this.x, y: this.y, force: this.isEvo ? 450 : 260 });
+          }
+        }
+      });
+      // 降噪核爆耳机：震碎敌方弹道
+      if (this.isEvo) {
+        game.projectiles.forEach(p => {
+          if (p.isEnemy && Math.hypot(p.x - this.x, p.y - this.y) <= curRadius + p.radius) {
+            p.alive = false;
+          }
+        });
+      }
+    }
+    // 2. 水杯地面烫水/咖啡水洼：持续伤害与减速
+    else if (this.type === "water_puddle") {
+      this.tickTimer += dt;
+      if (this.tickTimer >= this.tickInterval) {
+        this.tickTimer = 0;
+        game.enemies.forEach(enemy => {
+          if (enemy.alive && Math.hypot(enemy.x - this.x, enemy.y - this.y) <= this.radius + enemy.radius) {
+            enemy.takeDamage(this.damage, false, game);
+            if (this.slowPct > 0) {
+              enemy.speed = enemy.baseSpeed * (1 - this.slowPct);
+            }
+          }
+        });
+        // 进化版高压八杯水：为站在水里的玩家回血
+        if (this.isEvo && game.player && Math.hypot(game.player.x - this.x, game.player.y - this.y) <= this.radius + game.player.radius) {
+          game.player.heal(game.player.maxHp * 0.015, game, true);
+        }
+      }
+    }
+    // 3. 辞职信腐蚀池
+    else if (this.type === "resignation_pool") {
       this.tickTimer += dt;
       if (this.tickTimer >= this.tickInterval) {
         this.tickTimer = 0;
@@ -488,13 +488,68 @@ export class AOEZone {
         });
       }
     }
+    // 4. 快充充电线电击横扫 (瞬发多段)
+    else if (this.type === "electric_whip") {
+      game.enemies.forEach(enemy => {
+        if (enemy.alive && !this.hitEnemies.has(enemy)) {
+          const dist = Math.hypot(enemy.x - this.x, enemy.y - this.y);
+          if (dist <= this.radius + enemy.radius) {
+            const eAngle = Math.atan2(enemy.y - this.y, enemy.x - this.x);
+            let diff = Math.abs(eAngle - this.angle);
+            while (diff > Math.PI) diff -= Math.PI * 2;
+            diff = Math.abs(diff);
+
+            if (this.arc >= Math.PI * 1.9 || diff <= this.arc / 2) {
+              this.hitEnemies.add(enemy);
+              enemy.takeDamage(this.damage, false, game, { x: this.x, y: this.y, force: 180 });
+              // 电击粒子
+              for (let k = 0; k < 3; k++) {
+                game.particles.push(new Particle(enemy.x, enemy.y, (Math.random() - 0.5) * 80, (Math.random() - 0.5) * 80, "#38bdf8", 3, 0.2, "spark"));
+              }
+            }
+          }
+        }
+      });
+    }
   }
 
   draw(ctx) {
     ctx.save();
     const progress = 1 - (this.duration / this.maxDuration);
 
-    if (this.type === "resignation_pool") {
+    // 1. 声波脉冲圈
+    if (this.type === "sonic_wave") {
+      const curR = this.radius * progress;
+      ctx.strokeStyle = this.isEvo ? `rgba(239, 68, 68, ${1 - progress})` : `rgba(56, 189, 248, ${1 - progress})`;
+      ctx.lineWidth = this.isEvo ? 6 : 4;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, curR, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // 内层回音波
+      ctx.strokeStyle = this.isEvo ? `rgba(251, 191, 36, ${0.7 * (1 - progress)})` : `rgba(255, 255, 255, ${0.7 * (1 - progress)})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, Math.max(0, curR - 25), 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    // 2. 水杯地面水洼
+    else if (this.type === "water_puddle") {
+      ctx.fillStyle = this.isEvo ? "rgba(6, 182, 212, 0.35)" : "rgba(56, 189, 248, 0.25)";
+      ctx.strokeStyle = this.isEvo ? "#06b6d4" : "#38bdf8";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#e0f2fe";
+      ctx.font = "bold 10px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText(this.isEvo ? "🌊 八杯水领域" : "💧 沸水烫地", this.x, this.y);
+    }
+    // 3. 辞职信腐蚀池
+    else if (this.type === "resignation_pool") {
       ctx.fillStyle = "rgba(244, 63, 94, 0.25)";
       ctx.strokeStyle = "#f43f5e";
       ctx.lineWidth = 2;
@@ -507,7 +562,19 @@ export class AOEZone {
       ctx.font = "10px Arial";
       ctx.textAlign = "center";
       ctx.fillText("离职情绪", this.x, this.y);
-    } else if (this.type === "meeting_slow") {
+    }
+    // 4. 快充线电弧挥舞
+    else if (this.type === "electric_whip") {
+      ctx.strokeStyle = this.isEvo ? "#f59e0b" : "#38bdf8";
+      ctx.lineWidth = 4;
+      ctx.shadowColor = this.isEvo ? "#fbbf24" : "#0284c7";
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, this.angle - this.arc / 2, this.angle + this.arc / 2);
+      ctx.stroke();
+    }
+    // 5. 会议减速圈
+    else if (this.type === "meeting_slow") {
       ctx.fillStyle = "rgba(168, 85, 247, 0.2)";
       ctx.strokeStyle = "#a855f7";
       ctx.lineWidth = 2;
@@ -521,7 +588,9 @@ export class AOEZone {
       ctx.font = "bold 12px Arial";
       ctx.textAlign = "center";
       ctx.fillText("会议区 (减速)", this.x, this.y);
-    } else if (this.type === "boss_warning_circle") {
+    }
+    // 6. Boss 预警圈
+    else if (this.type === "boss_warning_circle") {
       ctx.fillStyle = "rgba(239, 68, 68, 0.2)";
       ctx.strokeStyle = "#ef4444";
       ctx.lineWidth = 2;
@@ -547,32 +616,42 @@ export class AOEZone {
   }
 }
 
-// 玩家类 (小陈)
+// 玩家类 (支持4大职业)
 export class Player {
-  constructor(x, y, metaTalents = {}) {
+  constructor(x, y, characterId = "xiaochen", metaTalents = {}) {
     this.x = x;
     this.y = y;
     this.radius = 16;
     this.alive = true;
+    this.characterId = characterId;
+    this.charConf = CHARACTERS[characterId] || CHARACTERS.xiaochen;
 
     // 天赋加成
-    const hpBonus = 1 + (metaTalents.health_check || 0) * 0.02;
-    const dmgBonus = 1 + (metaTalents.skilled_worker || 0) * 0.02;
-    const spdBonus = 1 + (metaTalents.fast_runner || 0) * 0.015;
-    const xpBonus = 1 + (metaTalents.slacker_xp || 0) * 0.02;
-    const bleedResist = (metaTalents.mental_construction || 0) * 0.002;
+    const hpBonus = 1 + (metaTalents.health_check || 0) * 0.04;
+    const dmgBonus = 1 + (metaTalents.skilled_worker || 0) * 0.05;
+    const spdBonus = 1 + (metaTalents.fast_runner || 0) * 0.03;
+    const xpBonus = 1 + (metaTalents.slacker_xp || 0) * 0.05;
+    const bleedResist = (metaTalents.mental_construction || 0) * 0.003;
 
-    this.maxHp = PLAYER_BASE.maxHp * hpBonus;
+    // 职业基础数值初始化
+    this.maxHp = this.charConf.baseStats.maxHp * hpBonus;
     this.hp = this.maxHp;
-    this.baseMoveSpeed = PLAYER_BASE.moveSpeed * spdBonus;
+    this.baseMoveSpeed = this.charConf.baseStats.moveSpeed * spdBonus;
     this.moveSpeed = this.baseMoveSpeed;
-    this.damageMult = PLAYER_BASE.damageMult * dmgBonus;
-    this.critRate = PLAYER_BASE.critRate;
-    this.critDmg = PLAYER_BASE.critDmg;
-    this.xpMult = PLAYER_BASE.xpMult * xpBonus;
-    this.pickupRadius = PLAYER_BASE.pickupRadius;
-    this.pickupSpeed = PLAYER_BASE.pickupSpeed;
+    this.damageMult = this.charConf.baseStats.damageMult * dmgBonus;
+    this.critRate = this.charConf.baseStats.critRate;
+    this.critDmg = this.charConf.baseStats.critDmg;
+    this.xpMult = this.charConf.baseStats.xpMult * xpBonus;
+    this.pickupRadius = this.charConf.baseStats.pickupRadius;
+    this.pickupSpeed = 8.5 * M_TO_PX;
     this.bleedResist = bleedResist;
+
+    // 初始武器
+    this.weapons = {};
+    this.weapons[this.charConf.initialWeapon] = 1;
+    this.skills = {};
+    this.artifacts = {};
+    this.evolvedWeapons = {};
 
     // 状态与资源
     this.pressure = 0;
@@ -582,12 +661,6 @@ export class Player {
     this.isCollapsed = false;
     this.lastHurtTime = 0;
 
-    // 武器 & 技能库
-    this.weapons = { keyboard: 1 };
-    this.skills = {};
-    this.artifacts = {};
-    this.evolvedWeapons = {};
-
     // 闪避
     this.isDodging = false;
     this.dodgeTimer = 0;
@@ -596,25 +669,25 @@ export class Player {
     this.dodgeCooldownTimer = 0;
     this.dodgeVx = 0;
     this.dodgeVy = 0;
-    this.perfectDodgeWindowTimer = 0;
     this.nextHitGuaranteedCrit = false;
     this.perfectDodgeCount = 0;
-
-    // 无敌帧
     this.invulnerableTimer = 0;
 
-    // 主动技能：疯狂输出
+    // 职业专属主动技能
     this.activeSkillCdTimer = 0;
     this.activeSkillDurationTimer = 0;
 
-    // 武器发射计时器
+    // 各武器计时器
     this.keyboardTimer = 0;
     this.keyboardShotCount = 0;
-    this.resignationTimer = 0;
     this.mugAngle = 0;
     this.mugShockwaveTimer = 0;
+    this.resignationTimer = 0;
+    this.headphonesTimer = 0;
+    this.waterCupTimer = 0;
+    this.chargingCableTimer = 0;
 
-    // 被动与辅助技能计时器
+    // 被动与技能计时器
     this.levelUpSpeedTimer = 0;
     this.shieldReady = false;
     this.shieldTimer = 0;
@@ -623,6 +696,10 @@ export class Player {
     this.toiletExcuseTimer = 0;
     this.quitModeTimer = 0;
 
+    // 莉莉改稿风暴 / 小张假装很忙 技能计时器
+    this.paletteStormAngle = 0;
+    this.stealthTimer = 0;
+
     // 神器计时器
     this.paidPoopTimer = 0;
     this.paidPoopInvulnTimer = 0;
@@ -630,19 +707,15 @@ export class Player {
     this.wifiDisabledTimer = 0;
     this.revivedOnce = false;
 
-    // 移动与朝向
+    // 移动朝向与数据
     this.faceX = 1;
     this.faceY = 0;
     this.lastMoveX = 0;
     this.lastMoveY = 0;
-
-    // 等级与经验
     this.level = 1;
     this.xp = 0;
     this.kills = 0;
     this.gold = 0;
-
-    // Debuff
     this.debuffDmgReductionTimer = 0;
     this.slowEffectMult = 1.0;
   }
@@ -660,11 +733,12 @@ export class Player {
     if (this.debuffDmgReductionTimer > 0) this.debuffDmgReductionTimer -= dt;
     if (this.paidPoopInvulnTimer > 0) this.paidPoopInvulnTimer -= dt;
     if (this.wifiDisabledTimer > 0) this.wifiDisabledTimer -= dt;
+    if (this.stealthTimer > 0) this.stealthTimer -= dt;
 
     this.updatePressure(dt, game);
     this.updateMovement(dt, inputDir, game);
     this.updatePassives(dt, game);
-    this.updateWeapons(dt, game);
+    this.updateAllWeapons(dt, game);
   }
 
   updatePressure(dt, game) {
@@ -674,7 +748,7 @@ export class Player {
 
     if (this.isCollapsed) {
       this.collapseTimer -= dt;
-      const drainRate = Math.max(0.01, 0.04 - this.bleedResist);
+      const drainRate = Math.max(0.01, 0.035 - this.bleedResist);
       const drainHp = this.maxHp * drainRate * dt;
       this.hp -= drainHp;
       if (this.hp <= 0) {
@@ -765,11 +839,15 @@ export class Player {
       speed *= (1 + SKILLS.on_time_off.spdBonus[this.skills.on_time_off - 1]);
     }
     if (this.levelUpSpeedTimer > 0) {
-      speed *= 1.12;
+      speed *= 1.25; // 升级加速
     }
+    if (this.stealthTimer > 0) {
+      speed *= 1.50; // 小张假装很忙加速
+    }
+
     let slow = this.slowEffectMult;
-    if (this.artifacts.noise_cancelling_headphones && slow < 1.0) {
-      slow = 1.0 - (1.0 - slow) * 0.3;
+    if (this.artifacts.noise_cancelling_headphones) {
+      slow = 1.0; // 降噪耳机完全免疫
     }
     speed *= slow;
 
@@ -821,7 +899,7 @@ export class Player {
 
     this.isDodging = true;
     this.dodgeTimer = this.dodgeDuration;
-    this.dodgeCooldownTimer = Math.max(1.0, dodgeCd);
+    this.dodgeCooldownTimer = Math.max(0.8, dodgeCd);
     this.invulnerableTimer = PLAYER_BASE.dodgeInvulnTime;
 
     const speed = dodgeDist / this.dodgeDuration;
@@ -837,9 +915,7 @@ export class Player {
     game.projectiles.forEach(p => {
       if (p.alive && p.isEnemy) {
         const dist = Math.hypot(p.x - this.x, p.y - this.y);
-        if (dist < 75) {
-          triggered = true;
-        }
+        if (dist < 80) triggered = true;
       }
     });
 
@@ -847,9 +923,7 @@ export class Player {
       game.enemies.forEach(e => {
         if (e.alive) {
           const dist = Math.hypot(e.x - this.x, e.y - this.y);
-          if (dist < e.radius + this.radius + 35) {
-            triggered = true;
-          }
+          if (dist < e.radius + this.radius + 40) triggered = true;
         }
       });
     }
@@ -868,18 +942,56 @@ export class Player {
     }
   }
 
+  // 释放职业主动技能
   performActiveSkill(game) {
     if (this.activeSkillCdTimer > 0 || this.wifiDisabledTimer > 0) return;
 
-    let cd = PLAYER_BASE.activeSkillCd;
-    if (this.artifacts.company_wifi) cd *= 0.75;
-    if (this.artifacts.boss_keyboard) cd *= 1.20;
+    let cd = this.charConf.active.cd;
+    if (this.artifacts.company_wifi) cd *= 0.65;
+    if (this.artifacts.boss_keyboard) cd *= 1.15;
 
     this.activeSkillCdTimer = cd;
-    this.activeSkillDurationTimer = PLAYER_BASE.activeSkillDuration;
+    this.activeSkillDurationTimer = this.charConf.active.duration;
 
-    sound.playLevelUp();
-    game.addFloatingText(this.x, this.y - 25, "🔥 疯狂输出！", "#ef4444", 18);
+    // 1. 小陈：疯狂输出
+    if (this.characterId === "xiaochen") {
+      sound.playLevelUp();
+      game.addFloatingText(this.x, this.y - 25, "🔥 疯狂输出 (攻速+80%)！", "#ef4444", 18);
+    }
+    // 2. 阿伟：系统崩溃 (全屏冰冻 + 雷击)
+    else if (this.characterId === "awei") {
+      sound.playExplosion(true);
+      game.addFloatingText(this.x, this.y - 30, "⚡ 系统崩溃！全屏冻结+雷击！", "#38bdf8", 20);
+      game.enemies.forEach(e => {
+        if (e.alive) {
+          e.takeDamage(160 * this.getDamageMultiplier(), true, game);
+          e.speed = 0; // 冻结
+          setTimeout(() => { if (e.alive) e.speed = e.baseSpeed; }, 3500);
+        }
+      });
+    }
+    // 3. 莉莉：改稿风暴 (调色盘风暴)
+    else if (this.characterId === "lili") {
+      sound.playSonicWave(true);
+      game.addFloatingText(this.x, this.y - 25, "🎨 改稿风暴！席卷全场", "#ec4899", 18);
+    }
+    // 4. 小张：假装很忙 (无敌隐身撒咖啡豆)
+    else if (this.characterId === "xiaozhang") {
+      sound.playPerfectDodge();
+      this.stealthTimer = 3.5;
+      this.invulnerableTimer = 3.5;
+      game.addFloatingText(this.x, this.y - 25, "🏃 假装很忙！隐身极速撒豆", "#fbbf24", 18);
+      // 沿路撒下高伤咖啡豆地面水洼
+      for (let i = 0; i < 4; i++) {
+        setTimeout(() => {
+          if (this.alive) {
+            game.aoeZones.push(new AOEZone({
+              x: this.x, y: this.y, radius: 2.5 * M_TO_PX, duration: 4.0, damage: 35 * this.getDamageMultiplier(), type: "water_puddle"
+            }));
+          }
+        }, i * 700);
+      }
+    }
   }
 
   updatePassives(dt, game) {
@@ -898,63 +1010,70 @@ export class Player {
       const interval = SKILLS.paid_slacking.interval[this.skills.paid_slacking - 1];
       if (this.paidSlackingTimer >= interval) {
         this.paidSlackingTimer = 0;
-        const heal = this.maxHp * SKILLS.paid_slacking.healPct;
-        this.heal(heal, game);
+        this.heal(this.maxHp * SKILLS.paid_slacking.healPct, game);
       }
     }
 
     if (this.skills.lunch_break && this.standTimer >= SKILLS.lunch_break.standTime) {
       const healRate = SKILLS.lunch_break.healPerSec[this.skills.lunch_break - 1];
-      const heal = this.maxHp * healRate * dt;
-      this.heal(heal, game, true);
+      this.heal(this.maxHp * healRate * dt, game, true);
     }
 
     if (this.artifacts.paid_poop) {
       this.paidPoopTimer += dt;
-      if (this.paidPoopTimer >= 30.0) {
+      if (this.paidPoopTimer >= 25.0) {
         this.paidPoopTimer = 0;
-        this.paidPoopInvulnTimer = 2.0;
-        game.addFloatingText(this.x, this.y - 20, "🧻 带薪拉屎 (无敌2s)", "#a855f7");
+        this.paidPoopInvulnTimer = 2.5;
+        game.addFloatingText(this.x, this.y - 20, "🧻 带薪拉屎 (无敌2.5s)", "#a855f7");
       }
     }
 
     if (this.artifacts.company_wifi) {
       this.wifiCutTimer += dt;
-      if (this.wifiCutTimer >= 45.0) {
+      if (this.wifiCutTimer >= 50.0) {
         this.wifiCutTimer = 0;
         this.wifiDisabledTimer = 2.0;
-        game.addFloatingText(this.x, this.y - 20, "📶 公司断网 (技能失效2s)", "#9ca3af");
+        game.addFloatingText(this.x, this.y - 20, "📶 公司微断网 (技能失效2s)", "#9ca3af");
       }
+    }
+
+    // 莉莉改稿风暴旋风绞杀判定
+    if (this.characterId === "lili" && this.activeSkillDurationTimer > 0) {
+      this.paletteStormAngle += dt * 8;
+      const stormRadius = 3.2 * M_TO_PX;
+      game.enemies.forEach(e => {
+        if (e.alive && Math.hypot(e.x - this.x, e.y - this.y) <= stormRadius + e.radius) {
+          e.takeDamage(28 * this.getDamageMultiplier() * dt * 10, false, game);
+        }
+      });
+      game.projectiles.forEach(p => {
+        if (p.isEnemy && Math.hypot(p.x - this.x, p.y - this.y) <= stormRadius) {
+          p.alive = false;
+        }
+      });
     }
   }
 
-  updateWeapons(dt, game) {
+  updateAllWeapons(dt, game) {
     if (this.paidPoopInvulnTimer > 0) return;
 
-    if (this.weapons.keyboard) {
-      this.updateKeyboard(dt, game);
-    }
-    if (this.weapons.mug) {
-      this.updateMug(dt, game);
-    }
-    if (this.weapons.resignation) {
-      this.updateResignation(dt, game);
-    }
+    if (this.weapons.keyboard) this.updateKeyboard(dt, game);
+    if (this.weapons.mug) this.updateMug(dt, game);
+    if (this.weapons.resignation) this.updateResignation(dt, game);
+    if (this.weapons.headphones) this.updateHeadphones(dt, game);
+    if (this.weapons.water_cup) this.updateWaterCup(dt, game);
+    if (this.weapons.charging_cable) this.updateChargingCable(dt, game);
   }
 
   getAttackSpeedMult() {
     let mult = 1.0;
-    if (this.skills.coffee) {
-      mult += SKILLS.coffee.values[this.skills.coffee - 1];
-    }
+    if (this.skills.coffee) mult += SKILLS.coffee.values[this.skills.coffee - 1];
     if (this.pressure >= 80) mult += PRESSURE_STAGES.RESIGN_MOOD.atkSpd;
     else if (this.pressure >= 60) mult += PRESSURE_STAGES.IRRITABLE.atkSpd;
     else if (this.pressure >= 30) mult += PRESSURE_STAGES.ANNOYED.atkSpd;
 
-    if (this.activeSkillDurationTimer > 0) {
-      mult += PLAYER_BASE.activeSkillAtkSpdBonus;
-    }
-    if (this.skills.last_minute_rush && (this.hp / this.maxHp) <= 0.35) {
+    if (this.characterId === "xiaochen" && this.activeSkillDurationTimer > 0) mult += 0.80;
+    if (this.skills.last_minute_rush && (this.hp / this.maxHp) <= 0.45) {
       mult += SKILLS.last_minute_rush.atkSpdBonus[this.skills.last_minute_rush - 1];
     }
     return mult;
@@ -962,48 +1081,25 @@ export class Player {
 
   getDamageMultiplier() {
     let mult = this.damageMult;
-    if (this.skills.kpi) {
-      mult += SKILLS.kpi.dmgBonus[this.skills.kpi - 1];
-    }
-    if (this.skills.slacker_science) {
-      mult -= SKILLS.slacker_science.dmgPenalty[this.skills.slacker_science - 1];
-    }
-    if (this.skills.dual_screen && this.skills.dual_screen >= 2) {
-      mult += SKILLS.dual_screen.dmgBonus[this.skills.dual_screen - 1];
-    }
-    if (this.skills.boss_is_coming && this.pressure >= 60) {
-      mult += SKILLS.boss_is_coming.highPressureDmg[this.skills.boss_is_coming - 1];
-    }
-    if (this.quitModeTimer > 0 && this.skills.quit) {
-      mult += SKILLS.quit.quitDmg[this.skills.quit - 1];
-    }
+    if (this.skills.kpi) mult += SKILLS.kpi.dmgBonus[this.skills.kpi - 1];
+    if (this.skills.dual_screen && this.skills.dual_screen >= 2) mult += SKILLS.dual_screen.dmgBonus[this.skills.dual_screen - 1];
+    if (this.skills.boss_is_coming && this.pressure >= 60) mult += SKILLS.boss_is_coming.highPressureDmg[this.skills.boss_is_coming - 1];
+    if (this.quitModeTimer > 0 && this.skills.quit) mult += SKILLS.quit.quitDmg[this.skills.quit - 1];
     if (this.pressure >= 80) mult += PRESSURE_STAGES.RESIGN_MOOD.dmg;
     else if (this.pressure >= 60) mult += PRESSURE_STAGES.IRRITABLE.dmg;
 
-    if (this.activeSkillDurationTimer > 0) {
-      mult += PLAYER_BASE.activeSkillDmgBonus;
-    }
-    if (this.artifacts.boss_keyboard) {
-      mult += 0.35;
-    }
-    if (this.debuffDmgReductionTimer > 0) {
-      mult *= 0.80;
-    }
-    return Math.max(0.2, mult);
+    if (this.characterId === "xiaochen" && this.activeSkillDurationTimer > 0) mult += 0.30;
+    if (this.artifacts.boss_keyboard) mult += 0.50;
+    if (this.debuffDmgReductionTimer > 0) mult *= 0.80;
+    return Math.max(0.3, mult);
   }
 
   getCritRate() {
     let rate = this.critRate;
-    if (this.skills.keyboard_warrior) {
-      rate += SKILLS.keyboard_warrior.critRate[this.skills.keyboard_warrior - 1];
-    }
-    if (this.pressure >= 80) {
-      rate += PRESSURE_STAGES.RESIGN_MOOD.crit;
-    }
-    if (this.skills.last_minute_rush && (this.hp / this.maxHp) <= 0.35) {
-      rate += SKILLS.last_minute_rush.critBonus[this.skills.last_minute_rush - 1];
-    }
-    return Math.min(0.70, rate);
+    if (this.skills.keyboard_warrior) rate += SKILLS.keyboard_warrior.critRate[this.skills.keyboard_warrior - 1];
+    if (this.pressure >= 80) rate += PRESSURE_STAGES.RESIGN_MOOD.crit;
+    if (this.skills.last_minute_rush && (this.hp / this.maxHp) <= 0.45) rate += SKILLS.last_minute_rush.critBonus[this.skills.last_minute_rush - 1];
+    return Math.min(0.85, rate);
   }
 
   getCritDamage() {
@@ -1014,12 +1110,13 @@ export class Player {
     return mult;
   }
 
+  // 1. 机械键盘
   updateKeyboard(dt, game) {
     const isEvo = !!this.evolvedWeapons.keyboard;
     const lvl = this.weapons.keyboard;
-    let baseInterval = 0.55;
-    if (lvl >= 3) baseInterval *= 0.88;
-    if (isEvo) baseInterval *= 0.72;
+    let baseInterval = 0.48;
+    if (lvl >= 3) baseInterval *= 0.82;
+    if (isEvo) baseInterval *= 0.70;
 
     const interval = baseInterval / this.getAttackSpeedMult();
     this.keyboardTimer += dt;
@@ -1028,37 +1125,28 @@ export class Player {
       this.keyboardTimer = 0;
       this.keyboardShotCount++;
 
-      const target = game.getNearestEnemy(this.x, this.y, 8 * M_TO_PX);
+      const target = game.getNearestEnemy(this.x, this.y, 9.0 * M_TO_PX);
       if (target) {
-        let baseDmg = 11;
-        if (lvl >= 2) baseDmg *= 1.18;
-        if (lvl >= 5) baseDmg *= 1.22;
+        let baseDmg = 16;
+        if (lvl >= 2) baseDmg *= 1.25;
+        if (lvl >= 5) baseDmg *= 1.30;
         const finalDmg = baseDmg * this.getDamageMultiplier();
 
         let count = 1;
-        if (this.skills.dual_screen) {
-          count += SKILLS.dual_screen.projectiles[this.skills.dual_screen - 1];
-        }
+        if (this.skills.dual_screen) count += SKILLS.dual_screen.projectiles[this.skills.dual_screen - 1];
+        if (lvl >= 4) count += 1;
         if (isEvo) count += 1;
-        if (lvl >= 4 && (this.keyboardShotCount % 4 === 0)) count += 1;
 
-        const pierce = (lvl >= 5 || isEvo) ? 1 : 0;
+        const pierce = (lvl >= 5 || isEvo) ? 2 : 0;
 
         for (let i = 0; i < count; i++) {
           const spread = (i - (count - 1) / 2) * 0.15;
           const angle = Math.atan2(target.y - this.y, target.x - this.x) + spread;
-          const speed = 450;
+          const speed = 480;
           game.projectiles.push(new Projectile({
-            x: this.x,
-            y: this.y,
-            vx: Math.cos(angle) * speed,
-            vy: Math.sin(angle) * speed,
-            damage: finalDmg,
-            radius: 7,
-            life: 1.5,
-            pierce: pierce,
-            isEvo: isEvo,
-            type: "keycap"
+            x: this.x, y: this.y,
+            vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+            damage: finalDmg, radius: 7, life: 1.5, pierce: pierce, isEvo: isEvo, type: "keycap"
           }));
         }
         sound.playKeyboardShot(isEvo);
@@ -1066,6 +1154,7 @@ export class Player {
     }
   }
 
+  // 2. 马克杯
   updateMug(dt, game) {
     const isEvo = !!this.evolvedWeapons.mug;
     const lvl = this.weapons.mug;
@@ -1074,18 +1163,17 @@ export class Player {
     if (lvl >= 5) count = 3;
     if (isEvo) count = 4;
 
-    let rotSpeed = 2.2;
-    if (lvl >= 2) rotSpeed *= 1.20;
+    let rotSpeed = 2.5;
+    if (lvl >= 2) rotSpeed *= 1.30;
     this.mugAngle += rotSpeed * dt;
 
-    let radius = 2.2 * M_TO_PX;
-    if (lvl >= 4) radius *= 1.10;
-    if (this.skills.loudspeaker_meeting) {
-      radius *= (1 + SKILLS.loudspeaker_meeting.areaBonus[this.skills.loudspeaker_meeting - 1]);
-    }
+    let radius = 2.3 * M_TO_PX;
+    if (lvl >= 4) radius *= 1.15;
+    if (this.skills.loudspeaker_meeting) radius *= (1 + SKILLS.loudspeaker_meeting.areaBonus[this.skills.loudspeaker_meeting - 1]);
 
-    let baseDmg = 16;
-    if (lvl >= 4) baseDmg *= 1.25;
+    let baseDmg = 22;
+    if (lvl >= 2) baseDmg *= 1.15;
+    if (lvl >= 4) baseDmg *= 1.30;
     const finalDmg = baseDmg * this.getDamageMultiplier();
 
     for (let i = 0; i < count; i++) {
@@ -1095,9 +1183,9 @@ export class Player {
 
       game.enemies.forEach(enemy => {
         if (enemy.alive && Math.hypot(enemy.x - mugX, enemy.y - mugY) <= enemy.radius + 12) {
-          if (!enemy.lastMugHitTime || (Date.now() - enemy.lastMugHitTime > 450)) {
+          if (!enemy.lastMugHitTime || (Date.now() - enemy.lastMugHitTime > 400)) {
             enemy.lastMugHitTime = Date.now();
-            enemy.takeDamage(finalDmg, false, game, lvl >= 5 ? { x: mugX, y: mugY, force: 150 } : null);
+            enemy.takeDamage(finalDmg, false, game, lvl >= 5 ? { x: mugX, y: mugY, force: 160 } : null);
             sound.playMugHit();
           }
         }
@@ -1106,15 +1194,13 @@ export class Player {
 
     if (isEvo) {
       this.mugShockwaveTimer += dt;
-      if (this.mugShockwaveTimer >= 8.0) {
+      if (this.mugShockwaveTimer >= 6.0) {
         this.mugShockwaveTimer = 0;
-        let shockRadius = 3.2 * M_TO_PX;
-        if (this.skills.loudspeaker_meeting) {
-          shockRadius *= (1 + SKILLS.loudspeaker_meeting.areaBonus[this.skills.loudspeaker_meeting - 1]);
-        }
+        let shockRadius = 4.0 * M_TO_PX;
+        if (this.skills.loudspeaker_meeting) shockRadius *= (1 + SKILLS.loudspeaker_meeting.areaBonus[this.skills.loudspeaker_meeting - 1]);
         game.enemies.forEach(enemy => {
           if (enemy.alive && Math.hypot(enemy.x - this.x, enemy.y - this.y) <= shockRadius + enemy.radius) {
-            enemy.takeDamage(finalDmg, false, game, { x: this.x, y: this.y, force: 280 });
+            enemy.takeDamage(finalDmg * 1.5, true, game, { x: this.x, y: this.y, force: 320 });
           }
         });
         sound.playExplosion(false);
@@ -1123,59 +1209,177 @@ export class Player {
     }
   }
 
+  // 3. 辞职信
   updateResignation(dt, game) {
     const isEvo = !!this.evolvedWeapons.resignation;
     const lvl = this.weapons.resignation;
-    let baseInterval = isEvo ? 2.2 : 2.0;
-    if (lvl >= 5 && !isEvo) baseInterval *= 0.82;
+    let baseInterval = isEvo ? 2.0 : 1.8;
+    if (lvl >= 5 && !isEvo) baseInterval *= 0.75;
     const interval = baseInterval / this.getAttackSpeedMult();
 
     this.resignationTimer += dt;
     if (this.resignationTimer >= interval) {
       this.resignationTimer = 0;
-      const target = game.getDenseEnemyClusterTarget(this.x, this.y, 10 * M_TO_PX) || game.getNearestEnemy(this.x, this.y, 10 * M_TO_PX);
+      const target = game.getDenseEnemyClusterTarget(this.x, this.y, 11 * M_TO_PX) || game.getNearestEnemy(this.x, this.y, 11 * M_TO_PX);
       if (target) {
-        let baseDmg = 38;
-        if (lvl >= 3) baseDmg *= 1.25;
-        if (lvl >= 5) baseDmg *= 1.20;
-        if (isEvo) baseDmg *= 1.80;
+        let baseDmg = 55;
+        if (lvl >= 2) baseDmg *= 1.20;
+        if (lvl >= 3) baseDmg *= 1.35;
+        if (lvl >= 5) baseDmg *= 1.30;
+        if (isEvo) baseDmg *= 2.20;
         const finalDmg = baseDmg * this.getDamageMultiplier();
 
-        let baseRadius = isEvo ? (3.2 * M_TO_PX) : (1.8 * M_TO_PX);
-        if (lvl >= 2 && !isEvo) baseRadius *= 1.18;
-        if (isEvo && this.pressure >= 80) baseRadius *= 1.25;
-        if (this.skills.loudspeaker_meeting) {
-          baseRadius *= (1 + SKILLS.loudspeaker_meeting.areaBonus[this.skills.loudspeaker_meeting - 1]);
-        }
+        let baseRadius = isEvo ? (4.0 * M_TO_PX) : (2.2 * M_TO_PX);
+        if (lvl >= 2 && !isEvo) baseRadius *= 1.25;
+        if (isEvo && this.pressure >= 80) baseRadius *= 1.35;
+        if (this.skills.loudspeaker_meeting) baseRadius *= (1 + SKILLS.loudspeaker_meeting.areaBonus[this.skills.loudspeaker_meeting - 1]);
 
         const tx = target.x;
         const ty = target.y;
 
         game.projectiles.push(new Projectile({
-          x: this.x,
-          y: this.y,
-          targetX: tx,
-          targetY: ty,
-          damage: finalDmg,
-          type: "resignation_bomb",
+          x: this.x, y: this.y, targetX: tx, targetY: ty, damage: finalDmg, type: "resignation_bomb",
           onExplode: (ex, ey) => {
             sound.playExplosion(isEvo);
             game.enemies.forEach(enemy => {
               if (enemy.alive && Math.hypot(enemy.x - ex, enemy.y - ey) <= baseRadius + enemy.radius) {
-                enemy.takeDamage(finalDmg, false, game, { x: ex, y: ey, force: 200 });
+                enemy.takeDamage(finalDmg, false, game, { x: ex, y: ey, force: 240 });
               }
             });
             if (lvl >= 4 || isEvo) {
               game.aoeZones.push(new AOEZone({
-                x: ex,
-                y: ey,
-                radius: baseRadius * 0.8,
-                duration: 2.0,
-                damage: finalDmg * 0.2,
-                type: "resignation_pool"
+                x: ex, y: ey, radius: baseRadius * 0.8, duration: 3.0, damage: finalDmg * 0.3, type: "resignation_pool"
               }));
             }
           }
+        }));
+      }
+    }
+  }
+
+  // 4. 降噪耳机 (新武器：声波全屏穿透)
+  updateHeadphones(dt, game) {
+    const isEvo = !!this.evolvedWeapons.headphones;
+    const lvl = this.weapons.headphones;
+    let baseInterval = isEvo ? 1.2 : 1.8;
+    if (lvl >= 3 && !isEvo) baseInterval *= 0.80;
+    const interval = baseInterval / this.getAttackSpeedMult();
+
+    this.headphonesTimer += dt;
+    if (this.headphonesTimer >= interval) {
+      this.headphonesTimer = 0;
+      let baseDmg = 32;
+      if (lvl >= 2) baseDmg *= 1.20;
+      if (lvl >= 5) baseDmg *= 1.35;
+      if (isEvo) baseDmg *= 1.80;
+      const finalDmg = baseDmg * this.getDamageMultiplier();
+
+      let radius = isEvo ? (5.5 * M_TO_PX) : (3.5 * M_TO_PX);
+      if (lvl >= 2 && !isEvo) radius *= 1.25;
+      if (this.skills.loudspeaker_meeting) radius *= (1 + SKILLS.loudspeaker_meeting.areaBonus[this.skills.loudspeaker_meeting - 1]);
+
+      sound.playSonicWave(isEvo);
+      game.aoeZones.push(new AOEZone({
+        x: this.x, y: this.y, radius: radius, duration: 0.4, damage: finalDmg, type: "sonic_wave", isEvo: isEvo
+      }));
+
+      // 双重/三重回音波 (Lv4+)
+      if (lvl >= 4 || isEvo) {
+        setTimeout(() => {
+          if (this.alive) {
+            game.aoeZones.push(new AOEZone({
+              x: this.x, y: this.y, radius: radius * 0.85, duration: 0.35, damage: finalDmg * 0.7, type: "sonic_wave", isEvo: isEvo
+            }));
+          }
+        }, 180);
+      }
+    }
+  }
+
+  // 5. 养生水杯 (新武器：投掷水杯落地留水洼5秒)
+  updateWaterCup(dt, game) {
+    const isEvo = !!this.evolvedWeapons.water_cup;
+    const lvl = this.weapons.water_cup;
+    let baseInterval = 2.0;
+    if (lvl >= 2) baseInterval *= 0.85;
+    const interval = baseInterval / this.getAttackSpeedMult();
+
+    this.waterCupTimer += dt;
+    if (this.waterCupTimer >= interval) {
+      this.waterCupTimer = 0;
+      let count = 1;
+      if (lvl >= 3) count = 2;
+      if (lvl >= 5) count = 3;
+      if (isEvo) count = 4;
+
+      let baseDmg = 18;
+      if (lvl >= 4) baseDmg *= 1.35;
+      if (isEvo) baseDmg *= 1.80;
+      const finalDmg = baseDmg * this.getDamageMultiplier();
+
+      let radius = 2.4 * M_TO_PX;
+      if (lvl >= 2) radius *= 1.25;
+      if (isEvo) radius *= 1.40;
+      if (this.skills.loudspeaker_meeting) radius *= (1 + SKILLS.loudspeaker_meeting.areaBonus[this.skills.loudspeaker_meeting - 1]);
+
+      const poolDuration = isEvo ? 7.0 : (lvl >= 4 ? 6.5 : 5.0);
+      const slowPct = (lvl >= 5 || isEvo) ? 0.40 : 0;
+
+      for (let i = 0; i < count; i++) {
+        const offsetAngle = (i * Math.PI * 2) / count;
+        const throwDist = 120 + Math.random() * 80;
+        const tx = Math.max(30, Math.min(game.mapWidth - 30, this.x + Math.cos(offsetAngle) * throwDist));
+        const ty = Math.max(30, Math.min(game.mapHeight - 30, this.y + Math.sin(offsetAngle) * throwDist));
+
+        game.projectiles.push(new Projectile({
+          x: this.x, y: this.y, targetX: tx, targetY: ty, damage: finalDmg, type: "water_cup_lob", isEvo: isEvo,
+          onExplode: (ex, ey) => {
+            sound.playCupShatter(isEvo);
+            game.aoeZones.push(new AOEZone({
+              x: ex, y: ey, radius: radius, duration: poolDuration, damage: finalDmg, type: "water_puddle", slowPct: slowPct, isEvo: isEvo
+            }));
+          }
+        }));
+      }
+    }
+  }
+
+  // 6. 快充充电线 (新武器：1秒电击扇形横扫)
+  updateChargingCable(dt, game) {
+    const isEvo = !!this.evolvedWeapons.charging_cable;
+    const lvl = this.weapons.charging_cable;
+    let baseInterval = isEvo ? 0.6 : 1.0;
+    if (lvl >= 4 && !isEvo) baseInterval *= 0.80;
+    const interval = baseInterval / this.getAttackSpeedMult();
+
+    this.chargingCableTimer += dt;
+    if (this.chargingCableTimer >= interval) {
+      this.chargingCableTimer = 0;
+      let baseDmg = 40;
+      if (lvl >= 2) baseDmg *= 1.25;
+      if (lvl >= 5) baseDmg *= 1.40;
+      if (isEvo) baseDmg *= 1.80;
+      const finalDmg = baseDmg * this.getDamageMultiplier();
+
+      let range = 2.8 * M_TO_PX;
+      if (lvl >= 2) range *= 1.25;
+      if (isEvo) range *= 1.60;
+      if (this.skills.loudspeaker_meeting) range *= (1 + SKILLS.loudspeaker_meeting.areaBonus[this.skills.loudspeaker_meeting - 1]);
+
+      const baseAngle = Math.atan2(this.faceY, this.faceX);
+      const isFull = (lvl >= 5 || isEvo);
+
+      sound.playElectricWhip(isEvo);
+      game.aoeZones.push(new AOEZone({
+        x: this.x, y: this.y, radius: range, duration: 0.15, damage: finalDmg, type: "electric_whip",
+        angle: baseAngle, arc: isFull ? (Math.PI * 2) : (120 * Math.PI / 180), isEvo: isEvo
+      }));
+
+      // 前后双向横扫 (Lv3)
+      if (lvl >= 3 && !isFull) {
+        game.aoeZones.push(new AOEZone({
+          x: this.x, y: this.y, radius: range, duration: 0.15, damage: finalDmg, type: "electric_whip",
+          angle: baseAngle + Math.PI, arc: 120 * Math.PI / 180, isEvo: isEvo
         }));
       }
     }
@@ -1194,11 +1398,7 @@ export class Player {
 
     let actualDamage = amount;
     if (this.artifacts.work_badge) {
-      if (sourceEnemy && (sourceEnemy.isElite || sourceEnemy.isBoss)) {
-        actualDamage *= 0.85;
-      } else {
-        actualDamage *= 1.05;
-      }
+      if (sourceEnemy && (sourceEnemy.isElite || sourceEnemy.isBoss)) actualDamage *= 0.75;
     }
 
     this.hp -= actualDamage;
@@ -1217,7 +1417,6 @@ export class Player {
     }
   }
 
-  // 修复：安全回血，即使未传入 game 对象也安全回退至 window.gameInstance，彻底杜绝卡死 Bug
   heal(amount, game = null, silent = false) {
     if (!this.alive || this.hp >= this.maxHp) return;
     this.hp = Math.min(this.maxHp, this.hp + amount);
@@ -1227,7 +1426,6 @@ export class Player {
     }
   }
 
-  // 拾取掉落物处理
   collectDrop(drop, game = null) {
     const targetGame = game || window.gameInstance;
     if (drop.type === 'xp') {
@@ -1237,11 +1435,10 @@ export class Player {
       this.gainXp(drop.value);
       sound.playLevelUp();
     } else if (drop.type === 'coffee') {
-      // 修复：安全调用 heal，并增加拾取提示
-      const healAmount = this.maxHp * 0.12;
+      const healAmount = this.maxHp * 0.15;
       this.heal(healAmount, targetGame, false);
       if (targetGame && targetGame.addFloatingText) {
-        targetGame.addFloatingText(this.x, this.y - 25, "☕ 咖啡回血 +12%", "#34d399", 14);
+        targetGame.addFloatingText(this.x, this.y - 25, "☕ 咖啡回血 +15%", "#34d399", 14);
       }
       sound.playMugHit();
     } else if (drop.type === 'artifact') {
@@ -1279,9 +1476,9 @@ export class Player {
   die(game) {
     if (this.artifacts.resignation_cert && !this.revivedOnce) {
       this.revivedOnce = true;
-      this.hp = this.maxHp * 0.35;
+      this.hp = this.maxHp * 0.50;
       this.pressure = 80;
-      this.invulnerableTimer = 2.0;
+      this.invulnerableTimer = 2.5;
       game.addFloatingText(this.x, this.y - 30, "📜 离职证明生效！复活！", "#ef4444", 18);
       sound.playLevelUp();
       return;
@@ -1297,6 +1494,7 @@ export class Player {
       ctx.globalAlpha = 0.5;
     }
 
+    // 疯狂输出残影
     if (this.activeSkillDurationTimer > 0) {
       ctx.fillStyle = "rgba(239, 68, 68, 0.3)";
       ctx.beginPath();
@@ -1304,6 +1502,7 @@ export class Player {
       ctx.fill();
     }
 
+    // 护盾光环
     if (this.shieldReady) {
       ctx.strokeStyle = "#38bdf8";
       ctx.lineWidth = 2.5;
@@ -1312,27 +1511,20 @@ export class Player {
       ctx.stroke();
     }
 
-    ctx.fillStyle = this.isCollapsed ? "#dc2626" : "#3b82f6";
+    // 身体颜色
+    ctx.fillStyle = this.isCollapsed ? "#dc2626" : (this.characterId === "awei" ? "#0284c7" : (this.characterId === "lili" ? "#ec4899" : (this.characterId === "xiaozhang" ? "#eab308" : "#3b82f6")));
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = "#1d4ed8";
+    ctx.strokeStyle = "#ffffff";
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    ctx.fillStyle = "#ffffff";
-    const eyeOffsetX = this.faceX * 6;
-    const eyeOffsetY = this.faceY * 6;
-    ctx.beginPath();
-    ctx.arc(this.x + eyeOffsetX - this.faceY * 4, this.y + eyeOffsetY + this.faceX * 4, 3, 0, Math.PI * 2);
-    ctx.arc(this.x + eyeOffsetX + this.faceY * 4, this.y + eyeOffsetY - this.faceX * 4, 3, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 10px Arial";
+    // 角色职业图标
+    ctx.font = "16px Arial";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("陈", this.x, this.y + 1);
+    ctx.fillText(this.charConf.avatar, this.x, this.y);
 
     if (this.isCollapsed) {
       ctx.fillStyle = "#fbbf24";
@@ -1340,6 +1532,7 @@ export class Player {
       ctx.fillText("崩", this.x, this.y - 24);
     }
 
+    // 绘制环绕马克杯
     if (this.weapons.mug) {
       const isEvo = !!this.evolvedWeapons.mug;
       const lvl = this.weapons.mug;
@@ -1348,20 +1541,29 @@ export class Player {
       if (lvl >= 5) count = 3;
       if (isEvo) count = 4;
 
-      let radius = 2.2 * M_TO_PX;
-      if (lvl >= 4) radius *= 1.10;
-      if (this.skills.loudspeaker_meeting) {
-        radius *= (1 + SKILLS.loudspeaker_meeting.areaBonus[this.skills.loudspeaker_meeting - 1]);
-      }
+      let radius = 2.3 * M_TO_PX;
+      if (lvl >= 4) radius *= 1.15;
+      if (this.skills.loudspeaker_meeting) radius *= (1 + SKILLS.loudspeaker_meeting.areaBonus[this.skills.loudspeaker_meeting - 1]);
 
       for (let i = 0; i < count; i++) {
         const angle = this.mugAngle + (i * (Math.PI * 2 / count));
         const mx = this.x + Math.cos(angle) * radius;
         const my = this.y + Math.sin(angle) * radius;
-        ctx.font = "14px Arial";
+        ctx.font = "15px Arial";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(isEvo ? "🍵" : "☕", mx, my);
+      }
+    }
+
+    // 莉莉调色盘风暴特效
+    if (this.characterId === "lili" && this.activeSkillDurationTimer > 0) {
+      for (let i = 0; i < 3; i++) {
+        const pAngle = this.paletteStormAngle + (i * Math.PI * 2 / 3);
+        const px = this.x + Math.cos(pAngle) * 3.2 * M_TO_PX;
+        const py = this.y + Math.sin(pAngle) * 3.2 * M_TO_PX;
+        ctx.font = "20px Arial";
+        ctx.fillText("🎨", px, py);
       }
     }
 
@@ -1369,7 +1571,7 @@ export class Player {
   }
 }
 
-// 普通敌人 (强化 AI：加入群体碰撞分离力 + 环绕包围与游走跟随)
+// 普通敌人
 export class Enemy {
   constructor(typeId, x, y, hpMult = 1.0, dmgMult = 1.0) {
     const conf = NORMAL_ENEMIES[typeId];
@@ -1397,9 +1599,8 @@ export class Enemy {
     this.lastContactDmgTime = 0;
     this.conf = conf;
 
-    // AI 特性参数：每个怪拥有随机的包围偏好角与侧翼游走周期
-    this.flankAngleOffset = (Math.random() - 0.5) * 1.2; // 侧翼偏角
-    this.orbitClockwise = Math.random() > 0.5 ? 1 : -1;  // 绕圈方向
+    this.flankAngleOffset = (Math.random() - 0.5) * 1.2;
+    this.orbitClockwise = Math.random() > 0.5 ? 1 : -1;
     this.wanderPhase = Math.random() * Math.PI * 2;
   }
 
@@ -1413,7 +1614,7 @@ export class Enemy {
     const nx = dx / dist;
     const ny = dy / dist;
 
-    // 1. 群体分离力计算 (Boids Separation)：避免敌人重叠扎堆
+    // 群体分离力 (避免重叠扎堆)
     let sepX = 0;
     let sepY = 0;
     const sepRadius = this.radius * 2.2;
@@ -1438,14 +1639,9 @@ export class Enemy {
       sepY /= neighborCount;
     }
 
-    // 2. 多态 AI 行为模式
-    // A. 基础近战 (同事僵尸 / 散落纸片)：环绕包围与侧翼逼近
     if (this.attackType === "melee") {
-      // 切向环绕力：垂直于直冲向量，使敌群从两侧散开并包抄玩家
       const tangentX = -ny * this.orbitClockwise;
       const tangentY = nx * this.orbitClockwise;
-
-      // 距离较远时以追踪为主，距离适中时侧翼包抄，距离很近时直接扑击
       let flankWeight = (dist > 80 && dist < 280) ? 0.45 : 0.15;
       let directWeight = 1.0 - flankWeight;
 
@@ -1455,16 +1651,14 @@ export class Enemy {
 
       this.x += (moveX / moveLen) * this.speed * dt;
       this.y += (moveY / moveLen) * this.speed * dt;
-    }
-    // B. 邮件怪：中远距离游走并定期射出企业邮件
-    else if (this.attackType === "ranged") {
+    } else if (this.attackType === "ranged") {
       const keep = this.conf.keepDistance;
       const tangentX = -ny * this.orbitClockwise;
       const tangentY = nx * this.orbitClockwise;
 
       let radialMove = 0;
-      if (dist < keep - 40) radialMove = -1.0; // 距离过近后撤
-      else if (dist > keep + 40) radialMove = 0.8; // 距离过远接近
+      if (dist < keep - 40) radialMove = -1.0;
+      else if (dist > keep + 40) radialMove = 0.8;
 
       let moveX = nx * radialMove + tangentX * 0.6 + sepX * 0.9;
       let moveY = ny * radialMove + tangentY * 0.6 + sepY * 0.9;
@@ -1476,23 +1670,13 @@ export class Enemy {
       this.attackTimer += dt;
       if (this.attackTimer >= this.conf.attackInterval) {
         this.attackTimer = 0;
-        // 发射企业邮件弹 (带信封外观)
         game.projectiles.push(new Projectile({
-          x: this.x,
-          y: this.y,
-          vx: nx * this.conf.bulletSpeed,
-          vy: ny * this.conf.bulletSpeed,
-          damage: this.damage,
-          radius: 6,
-          life: 3.0,
-          isEnemy: true,
-          type: "mail_bullet",
-          color: "#38bdf8"
+          x: this.x, y: this.y,
+          vx: nx * this.conf.bulletSpeed, vy: ny * this.conf.bulletSpeed,
+          damage: this.damage, radius: 6, life: 3.0, isEnemy: true, type: "mail_bullet", color: "#38bdf8"
         }));
       }
-    }
-    // C. 打印机：固定炮台，扇形喷射废纸
-    else if (this.attackType === "turret") {
+    } else if (this.attackType === "turret") {
       this.attackTimer += dt;
       if (this.attackTimer >= this.conf.attackInterval) {
         this.attackTimer = 0;
@@ -1500,22 +1684,13 @@ export class Enemy {
         [-0.28, 0, 0.28].forEach(offset => {
           const angle = baseAngle + offset;
           game.projectiles.push(new Projectile({
-            x: this.x,
-            y: this.y,
-            vx: Math.cos(angle) * this.conf.bulletSpeed,
-            vy: Math.sin(angle) * this.conf.bulletSpeed,
-            damage: this.damage,
-            radius: 6,
-            life: 3.5,
-            isEnemy: true,
-            type: "paper_fan",
-            color: "#f8fafc"
+            x: this.x, y: this.y,
+            vx: Math.cos(angle) * this.conf.bulletSpeed, vy: Math.sin(angle) * this.conf.bulletSpeed,
+            damage: this.damage, radius: 6, life: 3.5, isEnemy: true, type: "paper_fan", color: "#f8fafc"
           }));
         });
       }
-    }
-    // D. 电话怪：靠近后蓄力并释放环形夺命震动波
-    else if (this.attackType === "ring_shock") {
+    } else if (this.attackType === "ring_shock") {
       if (!this.isCharging) {
         let moveX = nx + sepX * 0.7;
         let moveY = ny + sepY * 0.7;
@@ -1539,9 +1714,7 @@ export class Enemy {
           game.addFloatingText(this.x, this.y - 15, "🔔 夺命连环call", "#ec4899", 12);
         }
       }
-    }
-    // E. 需求球：慢速追踪后瞬间高速冲锋
-    else if (this.attackType === "rush") {
+    } else if (this.attackType === "rush") {
       this.stateTimer += dt;
       if (!this.isCharging) {
         let moveX = nx + sepX * 0.6;
@@ -1563,9 +1736,7 @@ export class Enemy {
           this.stateTimer = 0;
         }
       }
-    }
-    // F. 红点消息群：蛇形游走突进
-    else if (this.typeId === "red_dot") {
+    } else if (this.typeId === "red_dot") {
       const wobble = Math.sin(this.wanderPhase) * 0.6;
       const tangentX = -ny;
       const tangentY = nx;
@@ -1577,14 +1748,12 @@ export class Enemy {
       this.y += (moveY / moveLen) * this.speed * dt;
     }
 
-    // 3. 会议怪减速光环
     if (this.typeId === "meeting_monster") {
       if (dist <= this.conf.auraRadius + player.radius) {
         player.slowEffectMult = Math.min(player.slowEffectMult, 1.0 - this.conf.slowPct);
       }
     }
 
-    // 4. 接触伤害判定 (0.65s冷却)
     if (dist <= this.radius + player.radius) {
       const now = Date.now();
       if (now - this.lastContactDmgTime >= PLAYER_BASE.contactDmgCd * 1000) {
@@ -1616,7 +1785,17 @@ export class Enemy {
     this.alive = false;
     game.player.kills++;
 
-    // 分裂怪逻辑 (文件怪 -> 2散落纸片)
+    // 阿伟被动：线上热更 (击杀18%概率触发代码爆炸)
+    if (game.player.characterId === "awei" && Math.random() < 0.18) {
+      sound.playExplosion(false);
+      game.addFloatingText(this.x, this.y - 20, "💾 线上热更爆炸！", "#38bdf8", 14);
+      game.enemies.forEach(subE => {
+        if (subE.alive && Math.hypot(subE.x - this.x, subE.y - this.y) <= 2.5 * M_TO_PX) {
+          subE.takeDamage(45 * game.player.getDamageMultiplier(), false, game);
+        }
+      });
+    }
+
     if (this.conf.splitOnDeath) {
       for (let i = 0; i < this.conf.splitOnDeath.count; i++) {
         const offsetAngle = Math.random() * Math.PI * 2;
@@ -1637,16 +1816,13 @@ export class Enemy {
       }
     }
 
-    // 掉落工作经验晶石
     game.drops.push(new DropItem(this.x, this.y, 'xp', this.xpDrop));
 
-    // 咖啡提神回复包掉落
     const coffeeChance = (game.player.hp / game.player.maxHp <= 0.3) ? 0.015 : 0.008;
     if (Math.random() < coffeeChance) {
       game.drops.push(new DropItem(this.x, this.y, 'coffee'));
     }
 
-    // 死亡碎纸/粒子
     for (let i = 0; i < 4; i++) {
       const angle = Math.random() * Math.PI * 2;
       const spd = 40 + Math.random() * 60;

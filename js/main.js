@@ -1,5 +1,5 @@
 /**
- * 《今天也不想上班》- 程序启动与UI事件绑定
+ * 《今天也不想上班》- 程序启动与UI事件绑定 (V1.3 升级版)
  */
 
 import { GameEngine } from './game.js';
@@ -9,12 +9,34 @@ window.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('game-canvas');
   const game = new GameEngine(canvas);
 
-  // 开始游戏按钮
+  // 开始游戏
   document.getElementById('btn-start-game').onclick = () => {
     game.startNewGame();
   };
 
-  // 局外天赋按钮
+  // 角色选择弹窗
+  document.getElementById('btn-open-characters').onclick = () => {
+    sound.init();
+    sound.playClick();
+    game.renderCharacterSelectModal();
+  };
+  document.getElementById('btn-close-characters').onclick = () => {
+    sound.playClick();
+    document.getElementById('character-modal').style.display = 'none';
+  };
+
+  // 关卡选择弹窗
+  document.getElementById('btn-open-stages').onclick = () => {
+    sound.init();
+    sound.playClick();
+    game.renderStageSelectModal();
+  };
+  document.getElementById('btn-close-stages').onclick = () => {
+    sound.playClick();
+    document.getElementById('stage-modal').style.display = 'none';
+  };
+
+  // 局外天赋弹窗
   document.getElementById('btn-open-talents').onclick = () => {
     sound.init();
     sound.playClick();
@@ -25,7 +47,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('talent-modal').style.display = 'none';
   };
 
-  // 玩法指南按钮
+  // 玩法指南弹窗
   document.getElementById('btn-open-guide').onclick = () => {
     sound.init();
     sound.playClick();
@@ -34,6 +56,21 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-close-guide').onclick = () => {
     sound.playClick();
     document.getElementById('guide-modal').style.display = 'none';
+  };
+
+  // 设置菜单弹窗 (齿轮按钮)
+  document.getElementById('btn-open-settings').onclick = () => {
+    sound.init();
+    sound.playClick();
+    document.getElementById('settings-menu-modal').style.display = 'flex';
+  };
+  document.getElementById('btn-close-settings').onclick = () => {
+    sound.playClick();
+    document.getElementById('settings-menu-modal').style.display = 'none';
+  };
+  document.getElementById('btn-pause-from-settings').onclick = () => {
+    document.getElementById('settings-menu-modal').style.display = 'none';
+    game.pauseGame();
   };
 
   // 刷新升级选项
@@ -70,7 +107,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-quit-game').click();
   };
 
-  // 手机端技能与闪避按钮 (触摸与点击双重支持)
+  // 手机端动作按键
   const dodgeBtn = document.getElementById('btn-dodge');
   if (dodgeBtn) {
     dodgeBtn.addEventListener('touchstart', (e) => {
@@ -99,7 +136,7 @@ window.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // 快捷控制栏：虚拟摇杆开关
+  // 设置弹窗内功能按钮
   const controlsBtn = document.getElementById('btn-toggle-controls');
   if (controlsBtn) {
     controlsBtn.onclick = () => {
@@ -107,46 +144,44 @@ window.addEventListener('DOMContentLoaded', () => {
       sound.playClick();
       game.showMobileControls = !game.showMobileControls;
       document.getElementById('mobile-controls').style.display = (game.showMobileControls && game.state === 'PLAYING') ? 'block' : 'none';
-      controlsBtn.innerText = game.showMobileControls ? '🎮 摇杆: 开' : '🎮 摇杆: 关';
+      controlsBtn.innerText = game.showMobileControls ? '🎮 虚拟摇杆: 开' : '🎮 虚拟摇杆: 关';
     };
   }
 
-  // 音效开关
   const soundBtn = document.getElementById('btn-toggle-sound');
   if (soundBtn) {
     soundBtn.onclick = () => {
       sound.init();
       const muted = sound.toggleMute();
-      soundBtn.innerText = muted ? '🔇 静音' : '🔊 音效';
+      soundBtn.innerText = muted ? '🔇 音效: 关' : '🔊 音效: 开';
     };
   }
 
-  // 局内加速 (1x / 3x)
   const speedBtn = document.getElementById('btn-toggle-speed');
   if (speedBtn) {
     speedBtn.onclick = () => {
       sound.init();
       if (game.timeScale === 1.0) {
         game.timeScale = 3.0;
-        speedBtn.innerText = '⚡ 3x';
+        speedBtn.innerText = '⚡ 游戏速度: 3x';
       } else {
         game.timeScale = 1.0;
-        speedBtn.innerText = '⏱️ 1x';
+        speedBtn.innerText = '⏱️ 游戏速度: 1x';
       }
     };
   }
 
-  // 一键直接召唤主管Boss测试
   const bossTestBtn = document.getElementById('btn-test-boss');
   if (bossTestBtn) {
     bossTestBtn.onclick = () => {
       if (game.state === 'PLAYING') {
+        document.getElementById('settings-menu-modal').style.display = 'none';
         game.director.gameTime = 480;
         game.director.spawnBoss();
       }
     };
   }
 
-  // 启动主渲染与逻辑循环
+  // 启动主循环
   requestAnimationFrame((t) => game.loop(t));
 });
