@@ -34,72 +34,57 @@ body, html {
   touch-action: none;
 }
 
-/* 顶部与全局快捷工具栏 */
-.top-quick-bar {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  display: flex;
-  gap: 6px;
-  z-index: 50;
-}
-
-.quick-btn {
-  background: rgba(30, 41, 59, 0.88);
-  border: 1px solid #475569;
-  color: #f1f5f9;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 500;
-  cursor: pointer;
-  backdrop-filter: blur(6px);
-  transition: all 0.2s;
-  pointer-events: auto;
-}
-
-.quick-btn:hover, .quick-btn:active {
-  background: #3b82f6;
-  border-color: #60a5fa;
-}
-
-/* HUD 样式 */
+/* 顶部一体化防重叠 HUD 状态栏 */
 #hud {
   display: none;
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  padding: 8px 12px;
   pointer-events: none;
-  z-index: 20;
+  z-index: 30;
 }
 
-.hud-top-left {
-  position: absolute;
-  top: 12px;
-  left: 12px;
+.hud-top-bar {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  background: rgba(15, 23, 42, 0.8);
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid #334155;
-  backdrop-filter: blur(4px);
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 8px;
 }
 
-.hp-container {
+/* 左侧：职业头像 + 血条 */
+.hud-section-left {
   display: flex;
   align-items: center;
   gap: 6px;
+  background: rgba(15, 23, 42, 0.85);
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  backdrop-filter: blur(6px);
+  pointer-events: auto;
+}
+
+.hud-avatar {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.hp-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .bar-bg {
-  width: 120px;
-  height: 12px;
+  width: 100px;
+  height: 10px;
   background: #334155;
-  border-radius: 6px;
+  border-radius: 5px;
   overflow: hidden;
   position: relative;
 }
@@ -111,31 +96,43 @@ body, html {
   transition: width 0.15s ease-out;
 }
 
-.hud-top-center {
-  position: absolute;
-  top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid #334155;
-  padding: 5px 14px;
-  border-radius: 20px;
-  font-size: 14px;
+.hp-text {
+  font-size: 10px;
   font-weight: bold;
-  letter-spacing: 0.5px;
+  color: #cbd5e1;
 }
 
-.hud-top-right {
-  position: absolute;
-  top: 50px;
-  left: 12px;
+/* 中间：倒计时牌 */
+.hud-section-center {
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid #475569;
+  padding: 5px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+}
+
+/* 右侧：等级 + 经验 + 设置菜单齿轮 */
+.hud-section-right {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(15, 23, 42, 0.8);
-  padding: 4px 10px;
+  background: rgba(15, 23, 42, 0.85);
+  padding: 5px 10px;
   border-radius: 8px;
   border: 1px solid #334155;
+  backdrop-filter: blur(6px);
+  pointer-events: auto;
+}
+
+.xp-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-end;
 }
 
 .xp-fill {
@@ -145,29 +142,41 @@ body, html {
   transition: width 0.15s ease-out;
 }
 
+.btn-menu-icon {
+  background: #334155;
+  border: 1px solid #475569;
+  color: #ffffff;
+  border-radius: 6px;
+  padding: 3px 7px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* 底部压力条 */
 .hud-bottom-center {
   position: absolute;
-  bottom: 15px;
+  bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   background: rgba(15, 23, 42, 0.88);
-  padding: 6px 16px;
+  padding: 6px 14px;
   border-radius: 10px;
   border: 1px solid #475569;
   backdrop-filter: blur(6px);
   max-width: 90vw;
+  pointer-events: none;
 }
 
 .pressure-bar-bg {
   width: 220px;
-  max-width: 70vw;
-  height: 12px;
+  max-width: 65vw;
+  height: 10px;
   background: #1e293b;
-  border-radius: 6px;
+  border-radius: 5px;
   overflow: hidden;
   border: 1px solid #475569;
 }
@@ -179,23 +188,10 @@ body, html {
   transition: width 0.2s ease-out, background 0.3s;
 }
 
-.pulse-slow {
-  animation: pulseSlow 1s infinite alternate;
-}
-
-.pulse-fast {
-  animation: pulseFast 0.4s infinite alternate;
-}
-
-@keyframes pulseSlow {
-  from { filter: brightness(1); }
-  to { filter: brightness(1.4); }
-}
-
-@keyframes pulseFast {
-  from { filter: brightness(0.8); }
-  to { filter: brightness(1.7); }
-}
+.pulse-slow { animation: pulseSlow 1s infinite alternate; }
+.pulse-fast { animation: pulseFast 0.4s infinite alternate; }
+@keyframes pulseSlow { from { filter: brightness(1); } to { filter: brightness(1.4); } }
+@keyframes pulseFast { from { filter: brightness(0.8); } to { filter: brightness(1.7); } }
 
 .pressure-text {
   font-size: 11px;
@@ -203,7 +199,7 @@ body, html {
   white-space: nowrap;
 }
 
-/* 手机端虚拟摇杆与按键增强设计 */
+/* 手机端虚拟摇杆与按键 */
 #mobile-controls {
   display: none;
   position: absolute;
@@ -215,7 +211,6 @@ body, html {
   z-index: 35;
 }
 
-/* 左半屏幕触控区域：支持整片左侧触控滑移 */
 #joystick-zone {
   position: absolute;
   top: 0;
@@ -226,7 +221,6 @@ body, html {
   touch-action: none;
 }
 
-/* 虚拟摇杆底座：始终常驻可见，并带呼吸光圈 */
 #joystick-base {
   display: block;
   position: absolute;
@@ -239,10 +233,8 @@ body, html {
   border-radius: 50%;
   box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
   pointer-events: none;
-  transform: translate(0, 0);
 }
 
-/* 方向指示微标 */
 .joystick-arrow {
   position: absolute;
   font-size: 10px;
@@ -254,7 +246,6 @@ body, html {
 .arrow-left { left: 6px; top: 50%; transform: translateY(-50%); }
 .arrow-right { right: 6px; top: 50%; transform: translateY(-50%); }
 
-/* 摇杆操作头（中心滑块） */
 #joystick-nub {
   position: absolute;
   top: 50%;
@@ -273,10 +264,8 @@ body, html {
   font-size: 14px;
   color: #ffffff;
   pointer-events: none;
-  transition: transform 0.05s ease-out;
 }
 
-/* 右侧操作按钮组 */
 .action-buttons {
   position: absolute;
   bottom: 35px;
@@ -306,13 +295,10 @@ body, html {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6), 0 0 10px rgba(56, 189, 248, 0.3);
   position: relative;
   overflow: hidden;
-  user-select: none;
-  -webkit-user-select: none;
 }
 
 .action-btn:active {
   transform: scale(0.92);
-  filter: brightness(1.3);
 }
 
 .btn-dodge-style {
@@ -336,7 +322,7 @@ body, html {
   justify-content: center;
 }
 
-/* 模态框与弹窗 */
+/* 模态框通用 */
 .modal-overlay {
   display: none;
   position: absolute;
@@ -357,7 +343,7 @@ body, html {
   border: 2px solid #475569;
   border-radius: 16px;
   padding: 20px;
-  max-width: 650px;
+  max-width: 680px;
   width: 100%;
   text-align: center;
   box-shadow: 0 10px 30px rgba(0,0,0,0.6);
@@ -379,6 +365,7 @@ body, html {
   margin-bottom: 16px;
 }
 
+/* 三选一卡片 */
 .card-container {
   display: flex;
   gap: 12px;
@@ -423,32 +410,10 @@ body, html {
   to { box-shadow: 0 0 22px rgba(245, 158, 11, 0.8); }
 }
 
-.card-icon {
-  font-size: 30px;
-  margin-bottom: 6px;
-}
-
-.card-title {
-  font-size: 15px;
-  font-weight: bold;
-  color: #f8fafc;
-  margin-bottom: 4px;
-}
-
-.card-tag {
-  font-size: 10px;
-  padding: 2px 6px;
-  background: #1e293b;
-  border-radius: 4px;
-  color: #38bdf8;
-  margin-bottom: 6px;
-}
-
-.card-desc {
-  font-size: 11px;
-  color: #cbd5e1;
-  line-height: 1.4;
-}
+.card-icon { font-size: 30px; margin-bottom: 6px; }
+.card-title { font-size: 15px; font-weight: bold; color: #f8fafc; margin-bottom: 4px; }
+.card-tag { font-size: 10px; padding: 2px 6px; background: #1e293b; border-radius: 4px; color: #38bdf8; margin-bottom: 6px; }
+.card-desc { font-size: 11px; color: #cbd5e1; line-height: 1.4; }
 
 .btn {
   background: #3b82f6;
@@ -473,12 +438,82 @@ body, html {
   transform: none;
 }
 
-.btn-secondary {
-  background: #475569;
+.btn-secondary { background: #475569; }
+.btn-secondary:hover { background: #64748b; }
+
+/* 角色选择卡片 */
+.char-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+  text-align: left;
 }
-.btn-secondary:hover {
-  background: #64748b;
+
+.char-card {
+  background: #0f172a;
+  border: 2px solid #334155;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.2s;
 }
+
+.char-card.selected {
+  border-color: #fbbf24;
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+}
+
+.char-avatar { font-size: 32px; }
+.char-name { font-size: 16px; font-weight: bold; color: #f8fafc; }
+.char-title { font-size: 12px; color: #38bdf8; margin-left: 4px; font-weight: normal; }
+.char-weapon { font-size: 12px; color: #fbbf24; }
+.char-desc { font-size: 11px; color: #94a3b8; }
+
+.char-skill-box {
+  background: #1e293b;
+  border-radius: 6px;
+  padding: 8px;
+  margin-top: 4px;
+}
+.skill-label { font-size: 11px; font-weight: bold; color: #38bdf8; }
+.skill-text { font-size: 11px; color: #cbd5e1; line-height: 1.3; }
+
+.btn-char-select {
+  margin-top: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+/* 关卡选择卡片 */
+.stage-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.stage-card {
+  background: #0f172a;
+  border: 2px solid #334155;
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stage-card.selected {
+  border-color: #10b981;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+}
+
+.stage-name { font-size: 15px; font-weight: bold; color: #f8fafc; }
+.stage-sub { font-size: 12px; color: #94a3b8; }
+.stage-info { font-size: 11px; color: #fbbf24; }
 
 /* 主菜单 */
 #main-menu {
@@ -498,25 +533,24 @@ body, html {
 }
 
 .game-logo {
-  font-size: 38px;
+  font-size: 36px;
   font-weight: 900;
   color: #fbbf24;
   text-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .game-sub {
-  font-size: 14px;
+  font-size: 13px;
   color: #94a3b8;
-  margin-bottom: 26px;
-  max-width: 85vw;
+  margin-bottom: 24px;
 }
 
 .menu-buttons {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  width: 240px;
+  gap: 10px;
+  width: 250px;
   max-width: 80vw;
 }
 
@@ -545,16 +579,8 @@ body, html {
   gap: 2px;
 }
 
-.talent-name {
-  font-size: 14px;
-  font-weight: bold;
-  color: #f8fafc;
-}
-
-.talent-desc {
-  font-size: 11px;
-  color: #94a3b8;
-}
+.talent-name { font-size: 14px; font-weight: bold; color: #f8fafc; }
+.talent-desc { font-size: 11px; color: #94a3b8; }
 
 /* 结算面板信息 */
 .result-stats {
@@ -568,19 +594,14 @@ body, html {
   text-align: left;
 }
 
-.result-item {
-  font-size: 13px;
-  color: #cbd5e1;
-}
+.result-item { font-size: 13px; color: #cbd5e1; }
+.result-item b { color: #fbbf24; }
+.build-showcase { grid-column: span 2; font-size: 12px; color: #38bdf8; border-top: 1px solid #334155; padding-top: 6px; }
 
-.result-item b {
-  color: #fbbf24;
-}
-
-.build-showcase {
-  grid-column: span 2;
-  font-size: 12px;
-  color: #38bdf8;
-  border-top: 1px solid #334155;
-  padding-top: 6px;
+/* 设置浮层 */
+.settings-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
 }
