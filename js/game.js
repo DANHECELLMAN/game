@@ -665,7 +665,7 @@ export class GameEngine {
       card.innerHTML = `
         <div class="stage-name">${stage.name}</div>
         <div class="stage-sub">${stage.subtitle}</div>
-        <div class="stage-info">时长：8分钟 · 终极Boss：主管</div>
+        <div class="stage-info">时长：8分钟 · 关底Boss：${stage.boss.icon} ${stage.boss.name}</div>
         <button class="btn btn-stage-select">${isSelected ? '当前关卡' : '选择进入'}</button>
       `;
 

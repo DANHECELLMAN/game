@@ -1,8 +1,8 @@
 /**
- * 《今天也不想上班》- 刷怪导演与模块化关卡系统 (V1.3 升级版)
+ * 《今天也不想上班》- 刷怪导演与模块化关卡系统 (V1.4 升级版)
  */
 
-import { STAGES_CONFIG, NORMAL_ENEMIES, ELITES, BOSS_CONFIG } from './constants.js';
+import { STAGES_CONFIG, NORMAL_ENEMIES, ELITES } from './constants.js';
 import { Enemy, Elite, SupervisorBoss } from './entities.js';
 import { sound } from './audio.js';
 
@@ -45,21 +45,19 @@ export class WaveDirector {
 
     this.gameTime += dt;
 
-    // 动态难度调节
     this.killRateTimer += dt;
     if (this.killRateTimer >= 20.0) {
       this.killRateTimer = 0;
       if (this.recentKills > 35) {
         this.dynamicMult = 1.15;
       } else if (this.game.player.hp / this.game.player.maxHp <= 0.35) {
-        this.dynamicMult = 0.85;
+        this.dynamicMult = 0.88;
       } else {
         this.dynamicMult = 1.0;
       }
       this.recentKills = 0;
     }
 
-    // 精英与Boss固定出场
     if (!this.hrSpawned && this.gameTime >= ELITES.hr.spawnTime && !this.bossSpawned) {
       this.hrSpawned = true;
       this.spawnElite("hr");
@@ -78,7 +76,6 @@ export class WaveDirector {
 
     if (this.bossSpawned) return;
 
-    // 匹配关卡时间表波次
     const timeline = this.stageConfig.timeline;
     const currentWave = timeline.find(w => this.gameTime >= w.start && this.gameTime < w.end) || timeline[timeline.length - 1];
 
@@ -155,13 +152,13 @@ export class WaveDirector {
     this.game.enemies = this.game.enemies.filter(e => e.isElite);
 
     const p = this.game.player;
-    const boss = new SupervisorBoss(p.x, p.y - 250);
+    const boss = new SupervisorBoss(p.x, p.y - 250, this.stageConfig.boss);
     this.game.enemies.push(boss);
     this.game.bossInstance = boss;
 
     sound.playBossWarning();
     this.game.player.addPressure(10, this.game);
-    this.game.addFloatingText(p.x, p.y - 50, "👹【终极主管】登场！今日拒绝加班！", "#dc2626", 24);
+    this.game.addFloatingText(p.x, p.y - 50, `👹【${this.stageConfig.boss.name}】登场！今日拒绝加班！`, "#dc2626", 24);
   }
 
   recycleDistantEnemies() {

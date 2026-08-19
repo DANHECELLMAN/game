@@ -1,5 +1,5 @@
 /**
- * 《今天也不想上班》- 程序启动与UI事件绑定 (V1.3 升级版)
+ * 《今天也不想上班》- 程序启动与全平台UI事件绑定 (V1.4 升级版)
  */
 
 import { GameEngine } from './game.js';
@@ -14,62 +14,80 @@ window.addEventListener('DOMContentLoaded', () => {
     game.startNewGame();
   };
 
-  // 角色选择弹窗
+  // 角色选择弹窗与关闭/返回
+  const charModal = document.getElementById('character-modal');
   document.getElementById('btn-open-characters').onclick = () => {
     sound.init();
     sound.playClick();
     game.renderCharacterSelectModal();
   };
-  document.getElementById('btn-close-characters').onclick = () => {
+  const closeChar = () => {
     sound.playClick();
-    document.getElementById('character-modal').style.display = 'none';
+    charModal.style.display = 'none';
   };
+  document.getElementById('btn-close-characters').onclick = closeChar;
+  document.getElementById('btn-back-characters').onclick = closeChar;
+  document.getElementById('btn-close-char-x').onclick = closeChar;
 
-  // 关卡选择弹窗
+  // 关卡选择弹窗与关闭/返回
+  const stageModal = document.getElementById('stage-modal');
   document.getElementById('btn-open-stages').onclick = () => {
     sound.init();
     sound.playClick();
     game.renderStageSelectModal();
   };
-  document.getElementById('btn-close-stages').onclick = () => {
+  const closeStage = () => {
     sound.playClick();
-    document.getElementById('stage-modal').style.display = 'none';
+    stageModal.style.display = 'none';
   };
+  document.getElementById('btn-close-stages').onclick = closeStage;
+  document.getElementById('btn-back-stages').onclick = closeStage;
+  document.getElementById('btn-close-stage-x').onclick = closeStage;
 
-  // 局外天赋弹窗
+  // 局外天赋弹窗与关闭
+  const talentModal = document.getElementById('talent-modal');
   document.getElementById('btn-open-talents').onclick = () => {
     sound.init();
     sound.playClick();
     game.renderTalentsModal();
   };
-  document.getElementById('btn-close-talents').onclick = () => {
+  const closeTalent = () => {
     sound.playClick();
-    document.getElementById('talent-modal').style.display = 'none';
+    talentModal.style.display = 'none';
   };
+  document.getElementById('btn-close-talents').onclick = closeTalent;
+  document.getElementById('btn-close-talent-x').onclick = closeTalent;
 
-  // 玩法指南弹窗
+  // 玩法指南弹窗与关闭
+  const guideModal = document.getElementById('guide-modal');
   document.getElementById('btn-open-guide').onclick = () => {
     sound.init();
     sound.playClick();
-    document.getElementById('guide-modal').style.display = 'flex';
+    guideModal.style.display = 'flex';
   };
-  document.getElementById('btn-close-guide').onclick = () => {
+  const closeGuide = () => {
     sound.playClick();
-    document.getElementById('guide-modal').style.display = 'none';
+    guideModal.style.display = 'none';
   };
+  document.getElementById('btn-close-guide').onclick = closeGuide;
+  document.getElementById('btn-close-guide-x').onclick = closeGuide;
 
-  // 设置菜单弹窗 (齿轮按钮)
+  // 设置菜单弹窗与关闭
+  const settingsModal = document.getElementById('settings-menu-modal');
   document.getElementById('btn-open-settings').onclick = () => {
     sound.init();
     sound.playClick();
-    document.getElementById('settings-menu-modal').style.display = 'flex';
+    settingsModal.style.display = 'flex';
   };
-  document.getElementById('btn-close-settings').onclick = () => {
+  const closeSettings = () => {
     sound.playClick();
-    document.getElementById('settings-menu-modal').style.display = 'none';
+    settingsModal.style.display = 'none';
   };
+  document.getElementById('btn-close-settings').onclick = closeSettings;
+  document.getElementById('btn-close-settings-x').onclick = closeSettings;
+
   document.getElementById('btn-pause-from-settings').onclick = () => {
-    document.getElementById('settings-menu-modal').style.display = 'none';
+    settingsModal.style.display = 'none';
     game.pauseGame();
   };
 
@@ -175,13 +193,12 @@ window.addEventListener('DOMContentLoaded', () => {
   if (bossTestBtn) {
     bossTestBtn.onclick = () => {
       if (game.state === 'PLAYING') {
-        document.getElementById('settings-menu-modal').style.display = 'none';
-        game.director.gameTime = 480;
+        settingsModal.style.display = 'none';
+        game.director.gameTime = game.director.stageConfig.duration;
         game.director.spawnBoss();
       }
     };
   }
 
-  // 启动主循环
   requestAnimationFrame((t) => game.loop(t));
 });
