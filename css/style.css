@@ -32,7 +32,7 @@ body, html {
   touch-action: none;
 }
 
-/* 顶部一体化防重叠 HUD 状态栏 (固定在顶部，高度42px) */
+/* 顶部一体化防重叠 HUD 状态栏 */
 #hud {
   display: none;
   position: absolute;
@@ -54,18 +54,17 @@ body, html {
   gap: 6px;
 }
 
-/* 左侧：职业头像 + 血条 */
+/* 左侧：头像 + 血条 + 技能状态 */
 .hud-section-left {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   background: rgba(15, 23, 42, 0.88);
   padding: 4px 8px;
   border-radius: 8px;
   border: 1px solid #334155;
   backdrop-filter: blur(6px);
   pointer-events: auto;
-  min-width: 105px;
 }
 
 .hud-avatar {
@@ -80,7 +79,7 @@ body, html {
 }
 
 .bar-bg {
-  width: 80px;
+  width: 75px;
   height: 8px;
   background: #334155;
   border-radius: 4px;
@@ -101,6 +100,34 @@ body, html {
   color: #cbd5e1;
 }
 
+.hud-pc-cd {
+  display: flex;
+  gap: 4px;
+  margin-left: 2px;
+}
+
+@media (max-width: 600px) {
+  .hud-pc-cd {
+    display: none;
+  }
+}
+
+.hud-cd-badge {
+  font-size: 9px;
+  font-weight: bold;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: #1e293b;
+  border: 1px solid #475569;
+  color: #fbbf24;
+  white-space: nowrap;
+}
+
+.hud-cd-badge.ready {
+  color: #34d399;
+  border-color: #059669;
+}
+
 /* 中间：下班倒计时 */
 .hud-section-center {
   background: rgba(15, 23, 42, 0.9);
@@ -115,7 +142,7 @@ body, html {
   color: #f8fafc;
 }
 
-/* 右侧：等级 + 经验 + 设置菜单齿轮 */
+/* 右侧：等级 + 经验 + 设置齿轮 */
 .hud-section-right {
   display: flex;
   align-items: center;
@@ -152,7 +179,7 @@ body, html {
   cursor: pointer;
 }
 
-/* 底部压力条 (固定在底部中央，绝不上浮重叠) */
+/* 底部压力条 */
 .hud-bottom-center {
   position: fixed;
   bottom: 12px;
@@ -189,18 +216,13 @@ body, html {
   transition: width 0.2s ease-out, background 0.3s;
 }
 
-.pulse-slow { animation: pulseSlow 1s infinite alternate; }
-.pulse-fast { animation: pulseFast 0.4s infinite alternate; }
-@keyframes pulseSlow { from { filter: brightness(1); } to { filter: brightness(1.4); } }
-@keyframes pulseFast { from { filter: brightness(0.8); } to { filter: brightness(1.7); } }
-
 .pressure-text {
   font-size: 10px;
   font-weight: bold;
   white-space: nowrap;
 }
 
-/* 手机端虚拟摇杆与按键 */
+/* 手机端虚拟摇杆与动作按键 */
 #mobile-controls {
   display: none;
   position: absolute;
@@ -273,7 +295,7 @@ body, html {
   right: 20px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 14px;
   pointer-events: auto;
   touch-action: none;
 }
@@ -285,17 +307,18 @@ body, html {
   border: 3px solid #38bdf8;
   background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
   color: #ffffff;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: bold;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 1px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6), 0 0 10px rgba(56, 189, 248, 0.3);
   position: relative;
   overflow: hidden;
+  transition: transform 0.1s;
 }
 
 .action-btn:active {
@@ -307,6 +330,13 @@ body, html {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6), 0 0 12px rgba(251, 191, 36, 0.4) !important;
 }
 
+/* 技能CD倒计时遮罩层 (精美圆形半透明蒙层 + 醒目数字) */
+.action-btn.cooldown {
+  opacity: 0.9;
+  border-color: #64748b !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+}
+
 .action-btn.cooldown::after {
   content: attr(data-cd) 's';
   position: absolute;
@@ -314,16 +344,19 @@ body, html {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(15, 23, 42, 0.85);
+  background: rgba(15, 23, 42, 0.88);
   color: #fbbf24;
-  font-size: 14px;
-  font-weight: bold;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 50%;
+  backdrop-filter: blur(2px);
 }
 
-/* 弹窗样式与滚动修复 */
+/* 弹窗通用样式 */
 .modal-overlay {
   display: none;
   position: fixed;
@@ -364,9 +397,9 @@ body, html {
   background: rgba(255, 255, 255, 0.1);
   border: none;
   color: #94a3b8;
-  font-size: 20px;
-  width: 30px;
-  height: 30px;
+  font-size: 18px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
@@ -377,91 +410,163 @@ body, html {
 .modal-close-x:hover { color: #ffffff; background: #334155; }
 
 .modal-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
   color: #fbbf24;
 }
 
 .modal-subtitle {
-  font-size: 12px;
+  font-size: 11px;
   color: #94a3b8;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
-/* 升级卡片 */
+/* 局内升级卡片容器（PC 3列单排横排，手机 1列单排竖列，绝不错行） */
 .card-container {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
   margin-bottom: 14px;
 }
 
 .upgrade-card {
-  flex: 1;
-  min-width: 150px;
-  max-width: 180px;
-  background: #0f172a;
-  border: 2px solid #334155;
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  border: 1.5px solid #334155;
   border-radius: 12px;
-  padding: 12px 8px;
+  padding: 12px 10px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
+  gap: 6px;
 }
 
 .upgrade-card:hover, .upgrade-card:active {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   border-color: #38bdf8;
-  box-shadow: 0 6px 20px rgba(56, 189, 248, 0.3);
+  box-shadow: 0 4px 16px rgba(56, 189, 248, 0.25);
 }
 
-.upgrade-card.common { border-color: #64748b; }
-.upgrade-card.rare { border-color: #38bdf8; }
-.upgrade-card.epic { border-color: #a855f7; }
-.upgrade-card.evo {
+.upgrade-card.evo-card {
   border-color: #f59e0b;
-  background: linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%);
-  animation: evoGlow 1.5s infinite alternate;
+  background: linear-gradient(180deg, #312e81 0%, #0f172a 100%);
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.35);
 }
 
-@keyframes evoGlow {
-  from { box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
-  to { box-shadow: 0 0 22px rgba(245, 158, 11, 0.8); }
+.card-icon {
+  font-size: 26px;
+  line-height: 1;
 }
 
-.card-icon { font-size: 26px; margin-bottom: 4px; }
-.card-title { font-size: 14px; font-weight: bold; color: #f8fafc; margin-bottom: 2px; }
-.card-tag { font-size: 9px; padding: 2px 6px; background: #1e293b; border-radius: 4px; color: #38bdf8; margin-bottom: 4px; }
-.card-desc { font-size: 11px; color: #cbd5e1; line-height: 1.3; }
+.card-body {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
+.card-header-line {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: bold;
+  color: #f8fafc;
+  line-height: 1.3;
+}
+
+.card-tag {
+  font-size: 9px;
+  padding: 1px 6px;
+  background: #1e293b;
+  border-radius: 4px;
+  color: #38bdf8;
+  display: inline-block;
+}
+
+.card-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.35;
+}
+
+/* 手机端升级卡片：整齐单列竖排（Icon在左，信息在右，充满宽度，绝不错行） */
+@media (max-width: 600px) {
+  .card-container {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .upgrade-card {
+    width: 100% !important;
+    flex-direction: row !important;
+    text-align: left !important;
+    align-items: center !important;
+    padding: 10px 12px !important;
+    gap: 12px !important;
+  }
+
+  .upgrade-card .card-icon {
+    font-size: 28px !important;
+    flex-shrink: 0;
+  }
+
+  .upgrade-card .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .upgrade-card .card-header-line {
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+
+  .upgrade-card .card-title {
+    font-size: 13px !important;
+  }
+
+  .upgrade-card .card-desc {
+    font-size: 10.5px !important;
+    line-height: 1.3 !important;
+  }
+}
+
+/* 通用按钮 */
 .btn {
   background: #3b82f6;
   color: #ffffff;
   border: none;
-  padding: 9px 20px;
+  padding: 8px 18px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
 }
 
 .btn:hover, .btn:active { background: #2563eb; transform: scale(1.02); }
-.btn:disabled { background: #475569; cursor: not-allowed; transform: none; }
+.btn:disabled { background: #475569; cursor: not-allowed; transform: none; opacity: 0.6; }
 .btn-secondary { background: #475569; }
 .btn-secondary:hover { background: #64748b; }
 
-/* 角色选择卡片与触屏滚动适配 */
+/* 角色选择卡片优化（清晰排版、紧凑字号、专业版型） */
 .char-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   text-align: left;
   touch-action: pan-y !important;
 }
@@ -473,36 +578,138 @@ body, html {
 }
 
 .char-card {
-  background: #0f172a;
-  border: 2px solid #334155;
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  border: 1.5px solid #334155;
   border-radius: 12px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  transition: all 0.2s;
+  gap: 6px;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
 .char-card.selected {
-  border-color: #fbbf24;
-  box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+  border-color: #38bdf8;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.3);
 }
 
-.char-avatar { font-size: 28px; }
-.char-name { font-size: 15px; font-weight: bold; color: #f8fafc; }
-.char-title { font-size: 11px; color: #38bdf8; margin-left: 4px; font-weight: normal; }
-.char-weapon { font-size: 11px; color: #fbbf24; }
-.char-desc { font-size: 10px; color: #94a3b8; }
+.char-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
-.char-skill-box {
-  background: #1e293b;
-  border-radius: 6px;
+.char-card-avatar {
+  font-size: 24px;
+  background: rgba(15, 23, 42, 0.7);
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.char-card-title-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.char-card-name {
+  font-size: 14px;
+  font-weight: bold;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.char-card-title {
+  font-size: 10px;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: normal;
+}
+
+.char-card-weapon-pill {
+  font-size: 10px;
+  color: #fbbf24;
+}
+
+.char-status-badge {
+  font-size: 10px;
+  color: #34d399;
+  font-weight: bold;
+  background: rgba(52, 211, 153, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.char-card-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.35;
+}
+
+.char-feature-list {
+  background: rgba(15, 23, 42, 0.6);
   padding: 6px 8px;
-  margin-top: 2px;
+  border-radius: 8px;
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
-.skill-label { font-size: 10px; font-weight: bold; color: #38bdf8; }
-.skill-text { font-size: 10px; color: #cbd5e1; line-height: 1.3; }
-.btn-char-select { margin-top: 4px; padding: 6px 10px; font-size: 11px; }
+
+.char-feature-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.char-feature-tag {
+  font-size: 9px;
+  font-weight: bold;
+  padding: 1px 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.passive-tag {
+  background: rgba(168, 85, 247, 0.2);
+  color: #c084fc;
+}
+
+.active-tag {
+  background: rgba(249, 115, 22, 0.2);
+  color: #fb923c;
+}
+
+.char-feature-content {
+  font-size: 10.5px;
+  color: #cbd5e1;
+  line-height: 1.35;
+}
+
+.btn-char-select {
+  margin-top: 4px;
+  padding: 6px 10px;
+  font-size: 11px;
+  width: 100%;
+}
+
+.btn-char-select.btn-selected {
+  background: #059669;
+}
 
 /* 关卡选择卡片 */
 .stage-grid {
@@ -516,7 +723,7 @@ body, html {
 
 .stage-card {
   background: #0f172a;
-  border: 2px solid #334155;
+  border: 1.5px solid #334155;
   border-radius: 10px;
   padding: 10px 14px;
   display: flex;
@@ -526,12 +733,25 @@ body, html {
 
 .stage-card.selected {
   border-color: #10b981;
-  box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
 }
 
-.stage-name { font-size: 14px; font-weight: bold; color: #f8fafc; }
-.stage-sub { font-size: 11px; color: #94a3b8; }
+.stage-name { font-size: 13px; font-weight: bold; color: #f8fafc; }
+.stage-sub { font-size: 10px; color: #94a3b8; }
 .stage-info { font-size: 10px; color: #fbbf24; }
+
+.stage-locked {
+  opacity: 0.65;
+  filter: grayscale(0.5);
+  border-color: #475569 !important;
+}
+
+.stage-lock-hint {
+  font-size: 10px;
+  color: #f87171;
+  font-weight: bold;
+  margin-top: 2px;
+}
 
 /* 主菜单 */
 #main-menu {
@@ -551,7 +771,7 @@ body, html {
 }
 
 .game-logo {
-  font-size: 34px;
+  font-size: 32px;
   font-weight: 900;
   color: #fbbf24;
   text-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
@@ -561,40 +781,55 @@ body, html {
 .game-sub {
   font-size: 12px;
   color: #94a3b8;
-  margin-bottom: 22px;
+  margin-bottom: 20px;
 }
 
 .menu-buttons {
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 8px;
   width: 240px;
   max-width: 80vw;
 }
 
-/* 天赋树 */
+/* 员工晋升升级网格与卡片 */
 .talent-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   text-align: left;
   touch-action: pan-y !important;
 }
 
-.talent-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #0f172a;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid #334155;
+.talent-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+  text-align: left;
 }
 
-.talent-info { display: flex; flex-direction: column; gap: 2px; }
-.talent-name { font-size: 13px; font-weight: bold; color: #f8fafc; }
-.talent-desc { font-size: 10px; color: #94a3b8; }
+@media (max-width: 600px) {
+  .talent-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.talent-card {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+}
+
+.talent-card:hover {
+  border-color: #38bdf8;
+}
 
 /* 结算面板信息 */
 .result-stats {
@@ -618,47 +853,4 @@ body, html {
   flex-direction: column;
   gap: 8px;
   margin-bottom: 14px;
-}
-
-/* 员工晋升升级网格与卡片 */
-.talent-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 12px;
-  text-align: left;
-}
-
-@media (max-width: 600px) {
-  .talent-grid {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-.talent-card {
-  background: #0f172a;
-  border: 1px solid #334155;
-  border-radius: 10px;
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: all 0.2s ease;
-}
-
-.talent-card:hover {
-  border-color: #38bdf8;
-}
-
-.stage-locked {
-  opacity: 0.65;
-  filter: grayscale(0.5);
-  border-color: #475569 !important;
-}
-
-.stage-lock-hint {
-  font-size: 10px;
-  color: #f87171;
-  font-weight: bold;
-  margin-top: 2px;
 }
