@@ -14,7 +14,7 @@
     <!-- 顶部一体化防重叠 HUD 状态栏 -->
     <div id="hud">
       <div class="hud-top-bar">
-        <!-- 左侧：头像与生命 -->
+        <!-- 左侧：头像与生命 + PC技能CD指示 -->
         <div class="hud-section-left">
           <span id="hud-avatar" class="hud-avatar">👨‍💼</span>
           <div class="hp-wrapper">
@@ -22,6 +22,10 @@
               <div id="hud-hp-fill" class="hp-fill"></div>
             </div>
             <span id="hud-hp-text" class="hp-text">110 / 110</span>
+          </div>
+          <div id="hud-pc-cd" class="hud-pc-cd">
+            <span id="hud-skill-status" class="hud-cd-badge ready">🔥 E: 就绪</span>
+            <span id="hud-dodge-status" class="hud-cd-badge ready">💨 闪避: 就绪</span>
           </div>
         </div>
 
