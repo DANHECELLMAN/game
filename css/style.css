@@ -619,3 +619,46 @@ body, html {
   gap: 8px;
   margin-bottom: 14px;
 }
+
+/* 员工晋升升级网格与卡片 */
+.talent-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+  text-align: left;
+}
+
+@media (max-width: 600px) {
+  .talent-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.talent-card {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+}
+
+.talent-card:hover {
+  border-color: #38bdf8;
+}
+
+.stage-locked {
+  opacity: 0.65;
+  filter: grayscale(0.5);
+  border-color: #475569 !important;
+}
+
+.stage-lock-hint {
+  font-size: 10px;
+  color: #f87171;
+  font-weight: bold;
+  margin-top: 2px;
+}
