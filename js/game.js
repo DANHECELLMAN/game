@@ -404,9 +404,13 @@ export class GameEngine {
       card.className = `upgrade-card ${choice.type === 'EVOLUTION' ? 'evo-card' : ''}`;
       card.innerHTML = `
         <div class="card-icon">${choice.icon}</div>
-        <div class="card-title">${choice.name}</div>
-        <div class="card-tag">${choice.tag}</div>
-        <div class="card-desc">${choice.desc}</div>
+        <div class="card-body">
+          <div class="card-header-line">
+            <div class="card-title">${choice.name}</div>
+            <div class="card-tag">${choice.tag}</div>
+          </div>
+          <div class="card-desc">${choice.desc}</div>
+        </div>
       `;
       card.onclick = () => {
         sound.playClick();
@@ -443,12 +447,16 @@ export class GameEngine {
 
     picks.forEach(art => {
       const card = document.createElement('div');
-      card.className = 'upgrade-card artifact-card-style';
+      card.className = 'upgrade-card evo-card';
       card.innerHTML = `
         <div class="card-icon">${art.icon}</div>
-        <div class="card-title" style="color:#a855f7;">${art.name}</div>
-        <div class="card-tag">🎁 职场神器</div>
-        <div class="card-desc">${art.desc}</div>
+        <div class="card-body">
+          <div class="card-header-line">
+            <div class="card-title" style="color:#c084fc;">${art.name}</div>
+            <div class="card-tag">🎁 职场神器</div>
+          </div>
+          <div class="card-desc">${art.desc}</div>
+        </div>
       `;
       card.onclick = () => {
         sound.playClick();
@@ -543,13 +551,31 @@ export class GameEngine {
       const card = document.createElement('div');
       card.className = `char-card ${isSelected ? 'selected' : ''}`;
       card.innerHTML = `
-        <div class="char-avatar">${char.avatar}</div>
-        <div class="char-name">${char.name} · ${char.title}</div>
-        <div class="char-desc">${char.desc}</div>
-        <div class="char-info">初始武器：${WEAPONS[char.initialWeapon].icon} ${WEAPONS[char.initialWeapon].name}</div>
-        <div class="char-info">被动天赋：<b>${char.passive.name}</b> (${char.passive.desc})</div>
-        <div class="char-info">大招：<b>${char.active.name}</b> (${char.active.desc})</div>
-        <button class="btn btn-char-select">${isSelected ? '出战中' : '选择出战'}</button>
+        <div class="char-card-header">
+          <div class="char-card-avatar">${char.avatar}</div>
+          <div class="char-card-title-group">
+            <div class="char-card-name">
+              ${char.name}
+              <span class="char-card-title">${char.title}</span>
+            </div>
+            <div class="char-card-weapon-pill">⚔️ 初始：${WEAPONS[char.initialWeapon].icon} ${WEAPONS[char.initialWeapon].name}</div>
+          </div>
+          ${isSelected ? '<span class="char-status-badge">✓ 出战中</span>' : ''}
+        </div>
+        <div class="char-card-desc">${char.desc}</div>
+        <div class="char-feature-list">
+          <div class="char-feature-row">
+            <span class="char-feature-tag passive-tag">🌟 被动</span>
+            <div class="char-feature-content"><b>${char.passive.name}</b>：${char.passive.desc}</div>
+          </div>
+          <div class="char-feature-row">
+            <span class="char-feature-tag active-tag">🔥 大招</span>
+            <div class="char-feature-content"><b>${char.active.name}</b> (${char.active.cd}s)：${char.active.desc}</div>
+          </div>
+        </div>
+        <button class="btn btn-char-select ${isSelected ? 'btn-selected' : ''}">
+          ${isSelected ? '已选择出战' : '选择出战'}
+        </button>
       `;
       card.querySelector('.btn-char-select').onclick = () => {
         sound.playClick();
@@ -824,6 +850,52 @@ export class GameEngine {
     document.getElementById('hud-pressure-fill').style.width = `${p.pressure}%`;
     document.getElementById('hud-pressure-fill').style.backgroundColor = pressStage.color;
     document.getElementById('hud-pressure-text').innerText = `压力: ${Math.round(p.pressure)}/100 【${pressStage.name}】`;
+
+    // 移动端动作按键冷却CD显示
+    const skillBtn = document.getElementById('btn-skill');
+    if (skillBtn) {
+      if (p.activeSkillCdTimer > 0) {
+        skillBtn.classList.add('cooldown');
+        skillBtn.setAttribute('data-cd', p.activeSkillCdTimer.toFixed(1));
+      } else {
+        skillBtn.classList.remove('cooldown');
+        skillBtn.removeAttribute('data-cd');
+      }
+    }
+
+    const dodgeBtn = document.getElementById('btn-dodge');
+    if (dodgeBtn) {
+      if (p.dodgeCooldownTimer > 0) {
+        dodgeBtn.classList.add('cooldown');
+        dodgeBtn.setAttribute('data-cd', p.dodgeCooldownTimer.toFixed(1));
+      } else {
+        dodgeBtn.classList.remove('cooldown');
+        dodgeBtn.removeAttribute('data-cd');
+      }
+    }
+
+    // PC端 HUD 技能与闪避冷却提示
+    const skillBadge = document.getElementById('hud-skill-status');
+    if (skillBadge) {
+      if (p.activeSkillCdTimer > 0) {
+        skillBadge.className = 'hud-cd-badge';
+        skillBadge.innerText = `🔥 E: ${p.activeSkillCdTimer.toFixed(1)}s`;
+      } else {
+        skillBadge.className = 'hud-cd-badge ready';
+        skillBadge.innerText = '🔥 E: 就绪';
+      }
+    }
+
+    const dodgeBadge = document.getElementById('hud-dodge-status');
+    if (dodgeBadge) {
+      if (p.dodgeCooldownTimer > 0) {
+        dodgeBadge.className = 'hud-cd-badge';
+        dodgeBadge.innerText = `💨 闪避: ${p.dodgeCooldownTimer.toFixed(1)}s`;
+      } else {
+        dodgeBadge.className = 'hud-cd-badge ready';
+        dodgeBadge.innerText = '💨 闪避: 就绪';
+      }
+    }
   }
 
   render() {
