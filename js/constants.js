@@ -1,42 +1,20 @@
 /**
- * 《今天也不想上班》- 核心常量与配置表 (V1.4 全周关卡与Boss大更版)
- * 包含：4大角色、6大武器（平衡初始范围与2s残留）、一周6大关卡与6大专属Boss设计
+ * 《今天也不想上班》- 核心数值常量与配置表 (V1.5 终极优化版)
  */
 
 export const M_TO_PX = 32;
 
-// 经验需求表 (平滑且适中的成长梯度)
+// 等级经验表 (1-50级)
 export const XP_TABLE = [
-  0,   // Lv1
-  14,  // 1->2
-  20,  // 2->3
-  28,  // 3->4
-  38,  // 4->5
-  50,  // 5->6
-  64,  // 6->7
-  80,  // 7->8
-  98,  // 8->9
-  118, // 9->10
-  140, // 10->11
-  164, // 11->12
-  190, // 12->13
-  218, // 13->14
-  248, // 14->15
-  280, // 15->16
-  314, // 16->17
-  350, // 17->18
-  388, // 18->19
-  428  // 19->20
+  0,
+  12,   28,   48,   72,   102,  138,  180,  230,  290,
+  360,  440,  530,  630,  740,  860,  990,  1130, 1280, 1440,
+  1620, 1810, 2020, 2240, 2480, 2730, 3000, 3280, 3580, 3900,
+  4240, 4600, 4980, 5380, 5800, 6240, 6700, 7180, 7680, 8200,
+  8750, 9320, 9920, 10540, 11190, 11860, 12560, 13290, 14050, 14840
 ];
 
-export function getXpRequiredForLevel(level) {
-  if (level < XP_TABLE.length) {
-    return XP_TABLE[level];
-  }
-  return 428 + (level - 20) * 42;
-}
-
-// 4大可选角色定义
+// 4大可选职场角色配置表
 export const CHARACTERS = {
   xiaochen: {
     id: "xiaochen",
@@ -111,15 +89,15 @@ export const CHARACTERS = {
       pickupRadius: 2.2 * M_TO_PX
     },
     passive: {
-      name: "像素精度",
-      desc: "暴击率额外 +12%，暴击伤害额外 +30%。"
+      name: "灵感迸发",
+      desc: "触发暴击时，在自身周围掉落颜料飞溅，造成 40% 溅射伤害。"
     },
     active: {
       name: "改稿风暴",
       icon: "🎨",
-      desc: "召唤旋转调色盘风暴环绕 4.5 秒，绞杀沿途敌人与弹道！",
+      desc: "召唤旋转调色盘风暴，在 4 秒内绞杀周围敌人并反弹弹道！",
       cd: 17.0,
-      duration: 4.5
+      duration: 4.0
     }
   },
   xiaozhang: {
@@ -127,61 +105,63 @@ export const CHARACTERS = {
     name: "小张",
     title: "无畏实习",
     avatar: "🧑‍🎓",
-    desc: "奇迹成长流，吃经验飞快，三选一极易刷出稀有高阶技能词条。",
+    desc: "职场新人光环，经验获取大幅提升，更容易遇到高级强化选项。",
     initialWeapon: "resignation",
     baseStats: {
       maxHp: 95,
-      moveSpeed: 4.3 * M_TO_PX,
-      damageMult: 1.00,
-      critRate: 0.06,
-      critDmg: 1.6,
+      moveSpeed: 4.1 * M_TO_PX,
+      damageMult: 1.0,
+      critRate: 0.04,
+      critDmg: 1.5,
       xpMult: 1.30,
       pickupRadius: 2.5 * M_TO_PX
     },
     passive: {
-      name: "潜力爆发",
-      desc: "经验获取 +30%，升级池刷出稀有/史诗词条几率大幅提升！"
+      name: "初生牛犊",
+      desc: "三选一升级时，出现稀有/进化词条的概率提升 50%。"
     },
     active: {
       name: "假装很忙",
-      icon: "🏃",
-      desc: "进入无敌隐身状态 3.0 秒，移速 +40% 并沿路洒下伤害咖啡豆！",
-      cd: 20.0,
-      duration: 3.0
+      icon: "🏃‍♂️",
+      desc: "进入 2.5 秒无敌与极速隐身奔跑状态，沿途洒下咖啡豆绊倒敌人！",
+      cd: 15.0,
+      duration: 2.5
     }
   }
 };
 
+// 玩家基础数值
 export const PLAYER_BASE = {
-  dodgeDistance: 2.8 * M_TO_PX,
-  dodgeDuration: 0.24,
-  dodgeCooldown: 3.2,
-  dodgeInvulnTime: 0.15,
-  perfectDodgeWindow: 0.18,
+  maxHp: 100,
+  moveSpeed: 4.0 * M_TO_PX,
+  pickupRadius: 2.0 * M_TO_PX,
   hurtInvulnTime: 0.45,
-  contactDmgCd: 0.65
+  dodgeSpeed: 10.0 * M_TO_PX,
+  dodgeDuration: 0.28,
+  dodgeCd: 2.8,
+  perfectDodgeWindow: 0.10,
+  contactDmgCd: 0.45
 };
 
-// 压力系统分段
+// 压力阶段配置
 export const PRESSURE_STAGES = {
-  NORMAL: { min: 0, max: 29, name: "正常", color: "#6b7280", atkSpd: 0, dmg: 0, crit: 0 },
-  ANNOYED: { min: 30, max: 59, name: "烦躁", color: "#eab308", atkSpd: 0.10, dmg: 0.05, crit: 0 },
-  IRRITABLE: { min: 60, max: 79, name: "暴躁", color: "#f97316", atkSpd: 0.16, dmg: 0.18, crit: 0.05 },
-  RESIGN_MOOD: { min: 80, max: 99, name: "我要辞职", color: "#ef4444", atkSpd: 0.25, dmg: 0.38, crit: 0.15 },
-  COLLAPSE: { min: 100, max: 100, name: "崩溃", color: "#dc2626", duration: 4.0, hpDrainPerSec: 0.04, resetPressure: 55 }
+  normal: { min: 0, max: 49, name: "正常", color: "#10b981", desc: "心如止水，专注摸鱼" },
+  anxious: { min: 50, max: 79, name: "焦虑", color: "#f59e0b", desc: "攻速+15%，移速+10%，受击伤害+10%" },
+  manic: { min: 80, max: 99, name: "狂躁", color: "#f97316", desc: "暴击+20%，武器范围+25%，每秒自增压力+0.5" },
+  collapse: { min: 100, max: 100, name: "崩溃", color: "#ef4444", desc: "全攻击暴击+50%，每秒扣除 2% 最大生命！" }
 };
 
-// 6大武器配置 (削弱初始范围、缩短残留时间为2秒)
+// 8大核心武器库与超级进化
 export const WEAPONS = {
   keyboard: {
     id: "keyboard",
     name: "机械键盘",
     type: "projectile",
     icon: "⌨️",
-    desc: "高射速远程键帽，成长后具备多弹道与穿透。",
-    tag: "射速 / 穿透",
+    desc: "高射速远程键帽，智能自动瞄准敌群，成长后多弹道与穿透。",
+    tag: "射速 / 穿透 / 自动索敌",
     levels: [
-      { level: 1, desc: "基础伤害 14，攻击间隔 0.52s，发射单发键帽", damage: 14, interval: 0.52, range: 8.0 * M_TO_PX, count: 1, pierce: 0 },
+      { level: 1, desc: "基础伤害 14，攻击间隔 0.52s，自动射击单发键帽", damage: 14, interval: 0.52, range: 8.0 * M_TO_PX, count: 1, pierce: 0 },
       { level: 2, desc: "伤害 +20%", damageMult: 1.20 },
       { level: 3, desc: "攻击间隔 -15%", intervalMult: 0.85 },
       { level: 4, desc: "发射键帽数 +1 (双发散射)", extraCount: 1 },
@@ -191,7 +171,7 @@ export const WEAPONS = {
       id: "keyboard_evo",
       name: "祖安机械键盘",
       icon: "⚡⌨️",
-      desc: "极速双发狂暴键帽！命中有 25% 概率触发“？？？”连锁爆炸（造成80%伤害）！",
+      desc: "极速双发狂暴键帽！命中有 25% 概率触发“？？？”连锁爆炸（造成80%范围伤害）！",
       req: { keyboard: 5, coffee: 3, dual_screen: 3 }
     }
   },
@@ -200,20 +180,20 @@ export const WEAPONS = {
     name: "马克杯",
     type: "orbit",
     icon: "☕",
-    desc: "白瓷杯环绕自身，对靠近的敌人造成高频近身绞杀。",
-    tag: "防守 / 贴脸环绕",
+    desc: "白瓷杯环绕自身形成全方位绞杀圈，大范围近身扫荡与咖啡溅射。",
+    tag: "范围 / 环绕扫荡",
     levels: [
-      { level: 1, desc: "1个杯子环绕，每次造成 18 伤害", damage: 18, count: 1, speed: 2.4, radius: 2.2 * M_TO_PX, hitCd: 0.45 },
-      { level: 2, desc: "旋转速度 +25%", speedMult: 1.25 },
-      { level: 3, desc: "杯子数量 +1 (共2个)", count: 2 },
+      { level: 1, desc: "1个大马克杯环绕扫荡，每次造成 18 范围伤害与溅射", damage: 18, count: 1, speed: 2.4, radius: 2.2 * M_TO_PX, hitCd: 0.35 },
+      { level: 2, desc: "旋转速度 +25%，扫荡判定范围扩大", speedMult: 1.25 },
+      { level: 3, desc: "杯子数量 +1 (共2个大杯)", count: 2 },
       { level: 4, desc: "伤害 +25%，旋转半径 +10%", damageMult: 1.25, radiusMult: 1.10 },
-      { level: 5, desc: "杯子数量 +1 (共3个)，附带击退", count: 3, knockback: true }
+      { level: 5, desc: "杯子数量 +1 (共3个大杯)，附带强力击退与水花溅射", count: 3, knockback: true }
     ],
     evolution: {
       id: "mug_evo",
       name: "无限续杯",
       icon: "🌊☕",
-      desc: "4个马克杯高速环绕！每 7 秒释放一次 3.5 米咖啡冲击波击飞杂兵！",
+      desc: "4个马克杯高速环绕！每 6 秒释放一次 4.0 米咖啡巨浪冲击波击飞全屏杂兵！",
       req: { mug: 5, shield: 3, coffee: 2 }
     }
   },
@@ -222,20 +202,20 @@ export const WEAPONS = {
     name: "辞职信",
     type: "mortar",
     icon: "📄",
-    desc: "抛射公文袋轰炸敌群，爆炸后留下腐蚀水洼。",
-    tag: "范围 / 轰炸",
+    desc: "自动锁定敌人最密集区域抛射公文袋，轰炸爆炸后留下腐蚀水洼。",
+    tag: "范围 / 密集轰炸",
     levels: [
-      { level: 1, desc: "每 2.0s 投掷辞职信，爆炸半径 1.8m，伤害 45", damage: 45, interval: 2.0, radius: 1.8 * M_TO_PX },
+      { level: 1, desc: "每 2.0s 自动轰炸最密集敌群，爆炸半径 1.8m，伤害 45", damage: 45, interval: 2.0, radius: 1.8 * M_TO_PX },
       { level: 2, desc: "爆炸半径 +20%", radiusMult: 1.20 },
       { level: 3, desc: "伤害 +25%", damageMult: 1.25 },
-      { level: 4, desc: "爆炸后留下持续 2.0 秒的“离职情绪”水洼", poolDuration: 2.0, poolDmgMult: 0.25 },
+      { level: 4, desc: "爆炸后留下持续 2.0 秒的“离职情绪”腐蚀水洼", poolDuration: 2.0, poolDmgMult: 0.25 },
       { level: 5, desc: "投掷间隔 -20%，爆炸伤害 +25%", intervalMult: 0.80, damageMult: 1.25 }
     ],
     evolution: {
       id: "resignation_evo",
       name: "辞职报告",
       icon: "📑💥",
-      desc: "每 2.2 秒召唤巨型辞职报告砸向敌群中心（半径 3.4m，190% 伤害；压力≥80时范围 +25%）！",
+      desc: "每 2.2 秒召唤巨型辞职报告砸向敌群中心（半径 3.6m，190% 毁灭伤害；压力≥80时范围 +25%）！",
       req: { resignation: 5, quit: 3, kpi: 2 }
     }
   },
@@ -244,10 +224,10 @@ export const WEAPONS = {
     name: "降噪耳机",
     type: "sonic",
     icon: "🎧",
-    desc: "发射 360° 声波震荡，穿透击退附近敌群。",
-    tag: "范围 / 声波穿透",
+    desc: "释放 360° 全方位高频声波震荡，穿透击退附近全屏敌群。",
+    tag: "范围 / 360°声波穿透",
     levels: [
-      { level: 1, desc: "每 2.0s 释放 2.2m 环形声波，造成 24 伤害并穿透全怪", damage: 24, interval: 2.0, radius: 2.2 * M_TO_PX },
+      { level: 1, desc: "每 2.0s 释放 2.2m 环形声波，造成 24 伤害并穿透击退全怪", damage: 24, interval: 2.0, radius: 2.2 * M_TO_PX },
       { level: 2, desc: "声波半径 +20%，伤害 +18%", radiusMult: 1.20, damageMult: 1.18 },
       { level: 3, desc: "释放间隔 -15%，击退距离提升", intervalMult: 0.85 },
       { level: 4, desc: "每次攻击释放 2 道回响声波 (双重打击)", echoWaves: 2 },
@@ -266,10 +246,10 @@ export const WEAPONS = {
     name: "养生水杯",
     type: "puddle_throw",
     icon: "🫗",
-    desc: "投掷水杯碎裂在地，留下持续 2 秒的水洼造成持续伤害。",
-    tag: "地面 / 持续伤害",
+    desc: "自动锁定敌群投掷水杯碎裂在地，形成大范围烫水水洼造成持续伤害。",
+    tag: "地面 / 持续伤害 / 自动投掷",
     levels: [
-      { level: 1, desc: "每 2.2s 投掷1个水杯，落地生成 1.8m 水洼持续 2.0 秒（每0.5s造成15伤害）", damage: 15, interval: 2.2, radius: 1.8 * M_TO_PX, count: 1, duration: 2.0 },
+      { level: 1, desc: "每 2.2s 自动向敌群投掷水杯，落地生成 1.8m 水洼持续 2.0 秒（造成持续伤害）", damage: 15, interval: 2.2, radius: 1.8 * M_TO_PX, count: 1, duration: 2.0 },
       { level: 2, desc: "水洼半径 +20%，投掷间隔 -15%", radiusMult: 1.20, intervalMult: 0.85 },
       { level: 3, desc: "投掷数量 +1 (同时扔出2个水杯)", count: 2 },
       { level: 4, desc: "地面伤害 +30%，持续时间延长至 2.5 秒", damageMult: 1.30, duration: 2.5 },
@@ -288,308 +268,311 @@ export const WEAPONS = {
     name: "快充充电线",
     type: "lightning_whip",
     icon: "🔌",
-    desc: "近战电击横扫，1秒攻击一次，挥舞电弧横扫前方。",
-    tag: "近战 / 扇形电弧",
+    desc: "自动锁定向敌人最密集方向挥舞高压电弧，大范围电击横扫与链式电击。",
+    tag: "近战 / 自动扇形电弧 / 连锁",
     levels: [
-      { level: 1, desc: "每 1.0s 挥舞电鞭横扫前方 120° 扇形 (半径 2.2m)，造成 34 电击伤害", damage: 34, interval: 1.0, range: 2.2 * M_TO_PX, count: 1 },
+      { level: 1, desc: "每 1.0s 自动向敌群扇形 (半径 2.4m) 挥舞电鞭，造成 34 电击与链式电弧", damage: 34, interval: 1.0, range: 2.4 * M_TO_PX, count: 1 },
       { level: 2, desc: "攻击范围 +20%，电击伤害 +20%", rangeMult: 1.20, damageMult: 1.20 },
       { level: 3, desc: "挥舞数量 +1 (同时前后双向横扫)", count: 2 },
-      { level: 4, desc: "挥舞间隔 -18% (0.82s一次)，引发连锁闪电", intervalMult: 0.82 },
+      { level: 4, desc: "挥舞间隔 -18% (0.82s一次)，引发连锁雷击", intervalMult: 0.82 },
       { level: 5, desc: "化为 360° 全身圆周电磁横扫，伤害额外 +30%", fullCircle: true, damageMult: 1.30 }
     ],
     evolution: {
       id: "charging_cable_evo",
       name: "超导快充高压鞭",
       icon: "⚡🔌",
-      desc: "每 0.7 秒引爆全屏超导雷击，电击全屏敌人并产生护盾！",
+      desc: "每 0.7 秒引爆全屏超导雷击，电击全屏敌人并产生静电护盾！",
       req: { charging_cable: 5, elevator_dash: 3, last_minute_rush: 2 }
+    }
+  },
+  chair: {
+    id: "chair",
+    name: "人体工学椅",
+    type: "chair_spin",
+    icon: "🪑",
+    desc: "诺手Q式360°大杀四方！每5秒狂暴旋转横扫一圈，外圈造成巨额暴击、强力击退并恢复摸鱼值。",
+    tag: "近战 / 360°横扫 / 外圈暴击",
+    levels: [
+      { level: 1, desc: "每 5.0s 旋转工学椅横扫一圈 (半径 2.8m)，内圈造成 45 伤害，外圈造成 170% 暴击与强力击退", damage: 45, interval: 5.0, range: 2.8 * M_TO_PX },
+      { level: 2, desc: "横扫伤害 +25%，旋转半径 +15%", damageMult: 1.25, rangeMult: 1.15 },
+      { level: 3, desc: "旋转冷却 -1.0s (4.0s 一次)，外圈命中回复少量生命", intervalVal: 4.0, healOnHit: 2 },
+      { level: 4, desc: "外圈锋刃造成 200% 暴击伤害并降低自身压力", damageMult: 1.25, sweetSpotMult: 2.0 },
+      { level: 5, desc: "连续旋转 2 圈 (双重大杀四方)，外圈范围扩大至 3.8m", doubleSpin: true, rangeMult: 1.20 }
+    ],
+    evolution: {
+      id: "chair_evo",
+      name: "老板真皮按摩椅",
+      icon: "👑🪑",
+      desc: "每 2.8 秒释放超音速气动旋风斩，外圈造成 250% 毁灭伤害与大击退，并吸取摸鱼能量生成气动护盾！",
+      req: { chair: 5, paid_slacking: 3, shield: 2 }
+    }
+  },
+  ac_freeze: {
+    id: "ac_freeze",
+    name: "空调·制冷",
+    type: "ac_freeze",
+    icon: "❄️",
+    desc: "自动锁定敌群喷射极寒冷气，伤害较低但能将命中的敌人冻结 1.0 秒（完全定身停止行动）！",
+    tag: "控场 / 极寒冻结1s",
+    levels: [
+      { level: 1, desc: "每 2.5s 向密集敌群喷射极寒冷气 (半径 5.5m)，造成 20 伤害并冻结敌人 1.0 秒", damage: 20, interval: 2.5, range: 5.5 * M_TO_PX, freezeDuration: 1.0 },
+      { level: 2, desc: "冷气范围 +20%，喷射间隔 -15%", rangeMult: 1.20, intervalMult: 0.85 },
+      { level: 3, desc: "伤害 +25%，冻结持续时间延长至 1.3 秒", damageMult: 1.25, freezeDuration: 1.3 },
+      { level: 4, desc: "冷气喷射角度扩大至 140°，冰霜穿透全怪", coneAngle: 140 },
+      { level: 5, desc: "冻结时间延长至 1.6 秒，被冻结敌人受到所有伤害 +30%", freezeDuration: 1.6, freezeVulnerability: 0.30 }
+    ]
+  },
+  ac_heat: {
+    id: "ac_heat",
+    name: "空调·制热",
+    type: "ac_heat",
+    icon: "🔥",
+    desc: "自动锁定敌群喷射滚烫热浪，伤害较高并对命中的敌人附加持续灼烧热伤害（DoT）！",
+    tag: "输出 / 持续灼烧",
+    levels: [
+      { level: 1, desc: "每 2.5s 向密集敌群喷射热浪 (半径 5.5m)，造成 50 伤害并灼烧敌人 3 秒 (每0.5s造成15伤害)", damage: 50, interval: 2.5, range: 5.5 * M_TO_PX, burnDps: 30, burnDuration: 3.0 },
+      { level: 2, desc: "初始伤害 +25%，灼烧伤害 +25%", damageMult: 1.25, burnDmgMult: 1.25 },
+      { level: 3, desc: "喷射间隔 -15%，灼烧持续时间延长至 4.0 秒", intervalMult: 0.85, burnDuration: 4.0 },
+      { level: 4, desc: "热浪范围 +25%，喷射后在地面留下一道持续 2 秒的余热火海", rangeMult: 1.25, groundFire: true },
+      { level: 5, desc: "初始伤害 +30%，被灼烧敌人死亡时引发烈焰爆炸", damageMult: 1.30, deathExplode: true }
+    ]
+  },
+  ac_fusion_evo: {
+    id: "ac_fusion_evo",
+    name: "中央空调·冰火两重天",
+    type: "ac_fusion_evo",
+    icon: "💥❄️🔥",
+    desc: "冷热共鸣终极进化！周期性在敌人最密集区域引发大范围冰火冷热对流核爆（范围爆炸攻击），造成 240% 爆发伤害并碎冰火海！",
+    tag: "超武共鸣 / 冰火核爆 / 范围毁灭",
+    evolution: {
+      id: "ac_fusion_evo",
+      name: "中央空调·冰火两重天",
+      icon: "💥❄️🔥",
+      desc: "每 3.2 秒在最密集敌群引爆冰火对流大核爆，对冻结敌人造成双倍暴击伤害并点燃全场！",
+      req: { ac_freeze: 3, ac_heat: 3 }
     }
   }
 };
 
-// 15个平衡后的升级技能
+// 15项被动技能配置表
 export const SKILLS = {
   coffee: {
     id: "coffee",
     name: "加班咖啡",
     icon: "☕",
-    tags: ["输出", "射速"],
+    desc: "攻击速度提升",
+    tag: "攻击速度",
     maxLevel: 5,
-    rarity: "common",
-    descs: [
-      "攻击速度 +12%",
-      "攻击速度 +24%",
-      "攻击速度 +36% (可进化键盘/杯子)",
-      "攻击速度 +48%",
-      "攻击速度 +60%"
-    ],
-    values: [0.12, 0.24, 0.36, 0.48, 0.60]
+    attackSpeed: [0.08, 0.16, 0.24, 0.32, 0.40],
+    levelDescs: ["攻击速度 +8%", "攻击速度 +16%", "攻击速度 +24%", "攻击速度 +32%", "攻击速度 +40% (全武器极速爆发)"]
   },
   dual_screen: {
     id: "dual_screen",
     name: "双屏办公",
     icon: "🖥️",
-    tags: ["输出", "弹道"],
-    maxLevel: 3,
-    rarity: "rare",
-    descs: [
-      "弹道/投掷数量 +1",
-      "弹道数量 +1，总伤害 +15%",
-      "弹道数量 +2，总伤害 +20% (可进化键盘)"
-    ],
-    projectiles: [1, 1, 2],
-    dmgBonus: [0, 0.15, 0.20]
+    desc: "弹道数量增加",
+    tag: "弹道数量",
+    maxLevel: 5,
+    projectiles: [1, 1, 2, 2, 3],
+    levelDescs: ["弹道数 +1", "弹道数 +1，弹道速度 +10%", "弹道数 +2", "弹道数 +2，弹道速度 +20%", "弹道数 +3 (多发散射狂潮)"]
   },
   keyboard_warrior: {
     id: "keyboard_warrior",
     name: "键盘侠",
-    icon: "⌨️🔥",
-    tags: ["输出", "暴击"],
-    maxLevel: 4,
-    rarity: "common",
-    descs: [
-      "暴击率 +8%",
-      "暴击率 +16%",
-      "暴击率 +24%",
-      "暴击率 +32%，暴击伤害额外 +35%"
-    ],
-    critRate: [0.08, 0.16, 0.24, 0.32],
-    critDmg: [0, 0, 0, 0.35]
+    icon: "⌨️",
+    desc: "暴击率与暴击伤害提升",
+    tag: "暴击 / 爆发",
+    maxLevel: 5,
+    critRate: [0.05, 0.10, 0.15, 0.20, 0.25],
+    critDmg: [0.20, 0.35, 0.50, 0.70, 1.00],
+    levelDescs: ["暴击率 +5%，暴击伤害 +20%", "暴击率 +10%，暴击伤害 +35%", "暴击率 +15%，暴击伤害 +50%", "暴击率 +20%，暴击伤害 +70%", "暴击率 +25%，暴击伤害 +100% (刀刀暴击)"]
   },
   kpi: {
     id: "kpi",
-    name: "KPI",
-    icon: "📈",
-    tags: ["风险", "高伤"],
-    maxLevel: 3,
-    rarity: "rare",
-    descs: [
-      "总伤害 +20%，压力获取 +10%",
-      "总伤害 +40%，压力获取 +18% (可进化辞职信)",
-      "总伤害 +65%，压力获取 +25%"
-    ],
-    dmgBonus: [0.20, 0.40, 0.65],
-    pressureGain: [0.10, 0.18, 0.25]
+    name: "KPI重压",
+    icon: "📊",
+    desc: "全局武器伤害大幅提升",
+    tag: "纯伤害",
+    maxLevel: 5,
+    damageBonus: [0.10, 0.20, 0.32, 0.45, 0.60],
+    levelDescs: ["全伤害 +10%", "全伤害 +20%", "全伤害 +32%", "全伤害 +45%", "全伤害 +60% (极致输出)"]
   },
   boss_is_coming: {
     id: "boss_is_coming",
-    name: "老板又来了",
+    name: "老板来了",
     icon: "👀",
-    tags: ["压力", "爆发"],
-    maxLevel: 3,
-    rarity: "common",
-    descs: [
-      "压力≥60时，总伤害额外 +15%",
-      "压力≥60时，总伤害额外 +30%",
-      "压力≥60时，总伤害额外 +50%"
-    ],
-    highPressureDmg: [0.15, 0.30, 0.50]
+    desc: "移动速度提升",
+    tag: "机动 / 移速",
+    maxLevel: 5,
+    speedBonus: [0.08, 0.16, 0.24, 0.32, 0.42],
+    levelDescs: ["移动速度 +8%", "移动速度 +16%", "移动速度 +24%", "移动速度 +32%", "移动速度 +42% (健步如飞)"]
   },
   quit: {
     id: "quit",
     name: "我不干了",
-    icon: "🚪",
-    tags: ["压力", "爆表"],
-    maxLevel: 3,
-    rarity: "epic",
-    descs: [
-      "崩溃后获得4秒辞职状态：总伤害+60%，压力回40",
-      "崩溃后获得5秒辞职状态：总伤害+100%，压力回40",
-      "崩溃后获得6秒辞职状态：总伤害+150%，压力回40 (可进化辞职信)"
-    ],
-    quitDur: [4.0, 5.0, 6.0],
-    quitDmg: [0.60, 1.00, 1.50]
+    icon: "🛑",
+    desc: "低血量与高压时伤害暴增",
+    tag: "背水一战",
+    maxLevel: 5,
+    lowHpDmg: [0.20, 0.40, 0.65, 0.95, 1.30],
+    levelDescs: ["生命低于50%时伤害 +20%", "生命低于50%时伤害 +40%", "生命低于50%时伤害 +65%", "生命低于50%时伤害 +95%", "生命低于50%时伤害 +130% (逆风翻盘)"]
   },
   shield: {
     id: "shield",
     name: "工位护盾",
     icon: "🛡️",
-    tags: ["生存"],
-    maxLevel: 3,
-    rarity: "rare",
-    descs: [
-      "每 13 秒获得1层护盾抵挡伤害",
-      "每 10 秒获得1层护盾抵挡伤害",
-      "每 7 秒获得1层护盾 (可进化杯子)"
-    ],
-    interval: [13.0, 10.0, 7.0]
+    desc: "周期性生成抵挡1次伤害的护盾",
+    tag: "生存 / 护盾",
+    maxLevel: 5,
+    shieldCd: [14.0, 11.5, 9.0, 7.0, 5.0],
+    levelDescs: ["每14秒获得1层护盾抵挡伤害", "护盾冷却缩短至 11.5 秒", "护盾冷却缩短至 9.0 秒", "护盾冷却缩短至 7.0 秒", "护盾冷却缩短至 5.0 秒 (金身不坏)"]
   },
   paid_slacking: {
     id: "paid_slacking",
     name: "带薪摸鱼",
-    icon: "🐟",
-    tags: ["回复"],
-    maxLevel: 3,
-    rarity: "common",
-    descs: [
-      "每 28 秒恢复 8% 最大生命",
-      "每 22 秒恢复 8% 最大生命 (可进化水杯)",
-      "每 16 秒恢复 10% 最大生命"
-    ],
-    interval: [28.0, 22.0, 16.0],
-    healPct: 0.08
+    icon: "📱",
+    desc: "每秒持续回复生命值",
+    tag: "持续回血",
+    maxLevel: 5,
+    regen: [0.8, 1.6, 2.6, 3.8, 5.2],
+    levelDescs: ["每秒恢复 0.8 生命", "每秒恢复 1.6 生命", "每秒恢复 2.6 生命", "每秒恢复 3.8 生命", "每秒恢复 5.2 生命 (血条永动机)"]
   },
   lunch_break: {
     id: "lunch_break",
-    name: "午休",
+    name: "午休充电",
     icon: "🍱",
-    tags: ["回复", "站桩"],
-    maxLevel: 3,
-    rarity: "common",
-    descs: [
-      "静止 1.8 秒后，每秒恢复 2.0% 最大生命",
-      "静止 1.8 秒后，每秒恢复 3.0% 最大生命 (可进化水杯)",
-      "静止 1.8 秒后，每秒恢复 4.5% 最大生命"
-    ],
-    standTime: 1.8,
-    healPerSec: [0.02, 0.03, 0.045]
+    desc: "最大生命值上限提升",
+    tag: "生命上限",
+    maxLevel: 5,
+    maxHpBonus: [0.15, 0.30, 0.48, 0.68, 0.90],
+    levelDescs: ["最大生命 +15%", "最大生命 +30%", "最大生命 +48%", "最大生命 +68%", "最大生命 +90% (肉盾体魄)"]
   },
   on_time_off: {
     id: "on_time_off",
     name: "准点下班",
-    icon: "👟",
-    tags: ["移动"],
-    maxLevel: 4,
-    rarity: "common",
-    descs: [
-      "移动速度 +8%",
-      "移动速度 +16% (可进化耳机)",
-      "移动速度 +24%",
-      "移动速度 +35%"
-    ],
-    spdBonus: [0.08, 0.16, 0.24, 0.35]
+    icon: "⏰",
+    desc: "拾取范围与摸鱼经验获取提升",
+    tag: "拾取 / 经验",
+    maxLevel: 5,
+    pickupBonus: [0.25, 0.50, 0.80, 1.15, 1.60],
+    xpBonus: [0.08, 0.16, 0.25, 0.35, 0.50],
+    levelDescs: ["拾取范围 +25%，经验获取 +8%", "拾取范围 +50%，经验获取 +16%", "拾取范围 +80%，经验获取 +25%", "拾取范围 +115%，经验获取 +35%", "拾取范围 +160%，经验获取 +50% (全屏吸取)"]
   },
   elevator_dash: {
     id: "elevator_dash",
     name: "电梯冲刺",
     icon: "🛗",
-    tags: ["闪避"],
-    maxLevel: 3,
-    rarity: "rare",
-    descs: [
-      "闪避距离 +15%，闪避CD -0.3s",
-      "闪避距离 +30%，闪避CD -0.5s",
-      "闪避距离 +45%，闪避CD -0.8s (可进化充电线)"
-    ],
-    distBonus: [0.15, 0.30, 0.45],
-    cdReduction: [0.3, 0.5, 0.8]
+    desc: "闪避冷却缩短，闪避距离提升",
+    tag: "闪避强化",
+    maxLevel: 5,
+    dodgeCdReduc: [0.15, 0.30, 0.45, 0.60, 0.75],
+    levelDescs: ["闪避冷却 -15%", "闪避冷却 -30%，闪避距离 +15%", "闪避冷却 -45%，闪避距离 +30%", "闪避冷却 -60%，闪避距离 +45%", "闪避冷却 -75% (无限滑步)"]
   },
   toilet_excuse: {
     id: "toilet_excuse",
-    name: "假装去厕所",
+    name: "带薪如厕",
     icon: "🚽",
-    tags: ["闪避", "减压"],
-    maxLevel: 3,
-    rarity: "rare",
-    descs: [
-      "闪避后 0.6 秒内受击压力减半；完美闪避额外 -4 压力",
-      "闪避后 1.0 秒内受击压力减半；完美闪避额外 -6 压力",
-      "闪避后 1.4 秒内受击压力减半；完美闪避额外 -9 压力"
-    ],
-    safeDur: [0.6, 1.0, 1.4],
-    extraDodgePressure: 4
+    desc: "完美闪避时掉落爆炸公文包并回血",
+    tag: "反击 / 特效",
+    maxLevel: 5,
+    healAmount: [5, 10, 16, 24, 35],
+    bombDmg: [40, 75, 120, 180, 260],
+    levelDescs: ["完美闪避恢复 5 点生命并扔出炸弹", "完美闪避恢复 10 点生命，炸弹伤害 +80%", "完美闪避恢复 16 点生命，炸弹伤害 +150%", "完美闪避恢复 24 点生命，炸弹伤害 +220%", "完美闪避恢复 35 点生命，引爆全屏公文包！"]
   },
   loudspeaker_meeting: {
     id: "loudspeaker_meeting",
     name: "扩音会议",
     icon: "📢",
-    tags: ["范围"],
-    maxLevel: 4,
-    rarity: "common",
-    descs: [
-      "所有武器与AOE范围 +15%",
-      "所有武器与AOE范围 +30%",
-      "所有武器与AOE范围 +45% (可进化耳机)",
-      "所有武器与AOE范围 +65%"
-    ],
-    areaBonus: [0.15, 0.30, 0.45, 0.65]
+    desc: "全武器范围 (AOE) 大幅扩大",
+    tag: "攻击范围",
+    maxLevel: 5,
+    areaBonus: [0.12, 0.24, 0.38, 0.54, 0.75],
+    levelDescs: ["全技能范围 +12%", "全技能范围 +24%", "全技能范围 +38%", "全技能范围 +54%", "全技能范围 +75% (全屏覆盖)"]
   },
   slacker_science: {
     id: "slacker_science",
-    name: "摸鱼学",
-    icon: "🎓",
-    tags: ["经验", "成长"],
-    maxLevel: 3,
-    rarity: "common",
-    descs: [
-      "经验获取 +20%",
-      "经验获取 +40%",
-      "经验获取 +65%，拾取范围 +50%"
-    ],
-    xpBonus: [0.20, 0.40, 0.65],
-    dmgPenalty: [0.0, 0.0, 0.0]
+    name: "摸鱼科学",
+    icon: "🔬",
+    desc: "压力增长减缓，压力衰减加速",
+    tag: "抗压 / 控压",
+    maxLevel: 5,
+    pressureReduc: [0.15, 0.30, 0.45, 0.60, 0.75],
+    levelDescs: ["受击增加压力 -15%", "受击增加压力 -30%", "受击增加压力 -45%，压力衰减 +20%", "受击增加压力 -60%，压力衰减 +40%", "受击增加压力 -75%，绝不崩溃！"]
   },
   last_minute_rush: {
     id: "last_minute_rush",
     name: "临时抱佛脚",
-    icon: "⚡🙏",
-    tags: ["低血爆发"],
-    maxLevel: 3,
-    rarity: "rare",
-    descs: [
-      "生命≤40%时，攻速 +20%，暴击率 +8%",
-      "生命≤40%时，攻速 +40%，暴击率 +15% (可进化充电线)",
-      "生命≤40%时，攻速 +65%，暴击率 +25%"
-    ],
-    hpThreshold: 0.40,
-    atkSpdBonus: [0.20, 0.40, 0.65],
-    critBonus: [0.08, 0.15, 0.25]
+    icon: "⚡",
+    desc: "暴击时引发闪电链打击敌人",
+    tag: "闪电链 / 特效",
+    maxLevel: 5,
+    chainDmg: [20, 38, 60, 90, 130],
+    targets: [2, 3, 4, 5, 7],
+    levelDescs: ["暴击时引发连锁闪电打击 2 个敌人", "连锁闪电打击 3 个目标，伤害 +90%", "连锁闪电打击 4 个目标，伤害 +150%", "连锁闪电打击 5 个目标，伤害 +220%", "连锁闪电打击 7 个目标 (全场雷暴)"]
   }
 };
 
-// 8个神器
+// 职场神器配置表
 export const ARTIFACTS = {
   paid_poop: {
     id: "paid_poop",
-    name: "带薪拉屎",
-    icon: "🧻",
-    desc: "每28秒自动进入2.0秒无敌。"
+    name: "带薪拉屎特权",
+    icon: "🚽",
+    desc: "每隔 35 秒获得 4 秒完全无敌与极速移动（摸鱼圣经）！",
+    type: "buff"
   },
   company_wifi: {
     id: "company_wifi",
-    name: "公司Wi-Fi",
+    name: "极速企业专线",
     icon: "📶",
-    desc: "主动技能CD -30%；每45秒有2秒微断网。"
+    desc: "全武器攻击间隔永久减少 18%，拾取范围 +30%！",
+    type: "stat"
   },
   boss_pie: {
     id: "boss_pie",
-    name: "老板画的饼",
-    icon: "🫓",
-    desc: "最大生命 +50%，拾取时恢复 20 生命。"
+    name: "老板画的大饼",
+    icon: "🥞",
+    desc: "生命值每降低 10%，全武器伤害额外提升 +12%！",
+    type: "buff"
   },
   year_end_bonus: {
     id: "year_end_bonus",
-    name: "年终奖",
+    name: "传说中的年终奖",
     icon: "💰",
-    desc: "本局工资掉落 +100%。"
+    desc: "经验获取 +35%，每击杀 50 个敌人自动全屏拾取所有掉落物！",
+    type: "special"
   },
   resignation_cert: {
     id: "resignation_cert",
-    name: "离职证明",
+    name: "离职证明（免死金牌）",
     icon: "📜",
-    desc: "首次死亡复活至 45% 生命，压力升至 80！"
+    desc: "受到致命伤害时免疫死亡，瞬间恢复 50% 生命并震飞全屏敌人（限1次）！",
+    type: "revive"
   },
   noise_cancelling_headphones: {
     id: "noise_cancelling_headphones",
-    name: "降噪耳机",
+    name: "主动降噪黑科技",
     icon: "🎧",
-    desc: "完全免疫会议怪减速；弹道预警更明显。"
+    desc: "受到远程子弹伤害降低 40%，且每 8 秒自动格挡一次敌方弹道！",
+    type: "defense"
   },
   work_badge: {
     id: "work_badge",
-    name: "工牌",
+    name: "镀金高级工牌",
     icon: "🪪",
-    desc: "受到精英怪与Boss伤害 -20%。"
+    desc: "受到精英和Boss伤害减少 20%，对精英与Boss伤害提升 25%！",
+    type: "boss_slayer"
   },
   boss_keyboard: {
     id: "boss_keyboard",
-    name: "老板的键盘",
-    icon: "👑⌨️",
-    desc: "全武器伤害 +40%，主动技能CD +15%。"
+    name: "红轴机械键盘",
+    icon: "⌨️",
+    desc: "键盘武器伤害 +40%，所有武器暴击伤害额外 +50%！",
+    type: "crit"
   }
 };
 
-// 8种普通敌人配置
+// 普通敌人配置表
 export const NORMAL_ENEMIES = {
   zombie_colleague: {
     id: "zombie_colleague",
@@ -645,84 +628,95 @@ export const NORMAL_ENEMIES = {
   },
   printer: {
     id: "printer",
-    name: "打印机",
+    name: "卡纸打印机",
     icon: "🖨️",
-    hp: 60,
-    damage: 9,
-    speed: 0,
-    threatCost: 2.8,
+    hp: 75,
+    damage: 10,
+    speed: 0.7 * M_TO_PX,
+    threatCost: 2.5,
     xpDrop: 4,
     size: 20,
     color: "#64748b",
-    attackType: "turret",
-    attackInterval: 3.0,
-    bulletSpeed: 3.8 * M_TO_PX,
-    bulletCount: 3,
-    spreadAngle: 0.5,
-    telegraphTime: 0.4
-  },
-  phone_monster: {
-    id: "phone_monster",
-    name: "电话怪",
-    icon: "☎️",
-    hp: 40,
-    damage: 9,
-    speed: 2.1 * M_TO_PX,
-    threatCost: 2.1,
-    xpDrop: 3,
-    size: 15,
-    color: "#ec4899",
-    attackType: "ring_shock",
-    triggerDistance: 2.2 * M_TO_PX,
-    chargeTime: 0.6,
-    radius: 2.2 * M_TO_PX
+    attackType: "burst_turret",
+    burstCount: 3,
+    burstInterval: 0.15,
+    attackInterval: 3.5,
+    bulletSpeed: 5.0 * M_TO_PX,
+    bulletDamage: 8
   },
   meeting_monster: {
     id: "meeting_monster",
     name: "会议怪",
     icon: "👥",
-    hp: 68,
-    damage: 5,
-    speed: 0.9 * M_TO_PX,
-    threatCost: 3.2,
-    xpDrop: 4,
-    size: 22,
+    hp: 55,
+    damage: 8,
+    speed: 1.25 * M_TO_PX,
+    threatCost: 2.0,
+    xpDrop: 3,
+    size: 18,
     color: "#a855f7",
-    auraRadius: 2.8 * M_TO_PX,
-    slowPct: 0.35
+    slowAura: {
+      radius: 2.8 * M_TO_PX,
+      slowPct: 0.25
+    }
+  },
+  phone_monster: {
+    id: "phone_monster",
+    name: "电话怪",
+    icon: "📞",
+    hp: 28,
+    damage: 6,
+    speed: 1.5 * M_TO_PX,
+    threatCost: 1.6,
+    xpDrop: 2,
+    size: 14,
+    color: "#eab308",
+    sonicPulse: {
+      interval: 4.0,
+      radius: 3.2 * M_TO_PX,
+      damage: 7
+    }
   },
   demand_ball: {
     id: "demand_ball",
-    name: "需求球",
-    icon: "🔴",
+    name: "急需求球",
+    icon: "💣",
     hp: 20,
-    damage: 6,
+    damage: 12,
     speed: 2.5 * M_TO_PX,
-    threatCost: 2.0,
+    threatCost: 1.5,
     xpDrop: 2,
     size: 12,
-    color: "#ef4444",
-    attackType: "rush",
-    rushDuration: 2.8,
-    pauseDuration: 1.0,
-    rushSpeed: 3.8 * M_TO_PX
+    color: "#ef4444"
+  },
+  paper_scrap: {
+    id: "paper_scrap",
+    name: "散落纸片",
+    icon: "📄",
+    hp: 8,
+    damage: 3,
+    speed: 1.6 * M_TO_PX,
+    threatCost: 0.5,
+    xpDrop: 1,
+    size: 9,
+    color: "#fef3c7"
   },
   red_dot: {
     id: "red_dot",
-    name: "红点消息",
-    icon: "💬",
-    hp: 14,
+    name: "未读红点",
+    icon: "🔴",
+    hp: 12,
     damage: 4,
     speed: 3.0 * M_TO_PX,
     threatCost: 0.7,
+    groupCount: 4,
     xpDrop: 1,
-    size: 10,
-    color: "#dc2626",
-    groupCount: 3
+    size: 8,
+    color: "#dc2626"
   }
 };
 
-// 2种通用精英
+// 精英怪配置表
 export const ELITES = {
   hr: {
     id: "hr",
@@ -763,16 +757,44 @@ export const ELITES = {
   }
 };
 
-// 局外天赋 (5项)
-export const TALENTS = {
-  health_check: { id: "health_check", name: "体检报告", icon: "📋", desc: "最大生命 +3% / 级", maxLevel: 5, valPerLvl: 0.03, prices: [90, 160, 280, 440, 650] },
-  skilled_worker: { id: "skilled_worker", name: "熟练工", icon: "🔧", desc: "全武器伤害 +4% / 级", maxLevel: 5, valPerLvl: 0.04, prices: [110, 200, 320, 500, 750] },
-  fast_runner: { id: "fast_runner", name: "跑得快", icon: "🏃", desc: "移动速度 +2.5% / 级", maxLevel: 5, valPerLvl: 0.025, prices: [80, 140, 240, 380, 550] },
-  slacker_xp: { id: "slacker_xp", name: "摸鱼经验", icon: "💡", desc: "经验获取 +4% / 级", maxLevel: 5, valPerLvl: 0.04, prices: [90, 160, 280, 440, 650] },
-  mental_construction: { id: "mental_construction", name: "心理建设", icon: "🧘", desc: "崩溃每秒扣血 -0.25% 最大生命 / 级", maxLevel: 5, valPerLvl: 0.0025, prices: [120, 220, 360, 560, 800] }
+// 角色与武器综合晋升升级系统 (全面提升角色属性与武器属性)
+export const UPGRADE_SYSTEM = {
+  character: {
+    title: "👤 角色个人属性",
+    items: [
+      { id: "hp_max", name: "体魄强化", icon: "❤️", desc: "最大生命 +5% / 级", maxLevel: 10, valPerLvl: 0.05, unit: "%", prices: [100, 180, 280, 420, 600, 820, 1100, 1450, 1900, 2500] },
+      { id: "move_speed", name: "摸鱼步法", icon: "🏃", desc: "移动速度 +3% / 级", maxLevel: 10, valPerLvl: 0.03, unit: "%", prices: [90, 160, 250, 380, 540, 750, 1000, 1300, 1700, 2200] },
+      { id: "hp_regen", name: "工位养生", icon: "🍵", desc: "每秒自然回血 +0.5 HP/s / 级", maxLevel: 10, valPerLvl: 0.5, unit: "HP/s", prices: [120, 220, 350, 520, 750, 1050, 1400, 1850, 2400, 3100] },
+      { id: "stress_resist", name: "抗压心理", icon: "🧘", desc: "受击增加压力 -5%，压力衰减加快 / 级", maxLevel: 10, valPerLvl: 0.05, unit: "%", prices: [110, 200, 320, 480, 680, 920, 1250, 1650, 2150, 2800] },
+      { id: "pickup_range", name: "敏锐触觉", icon: "🧲", desc: "拾取范围 +8% / 级", maxLevel: 10, valPerLvl: 0.08, unit: "%", prices: [80, 140, 220, 340, 500, 700, 950, 1250, 1650, 2100] },
+      { id: "crit_boost", name: "精准摸鱼", icon: "🎯", desc: "暴击率 +2%，暴击伤害 +10% / 级", maxLevel: 10, valPerLvl: 0.02, unit: "%", prices: [130, 240, 380, 560, 800, 1100, 1500, 2000, 2600, 3400] },
+      { id: "xp_gain", name: "打工悟性", icon: "💡", desc: "经验获取 +5% / 级", maxLevel: 10, valPerLvl: 0.05, unit: "%", prices: [100, 180, 290, 440, 630, 880, 1180, 1550, 2000, 2600] },
+      { id: "gold_gain", name: "年终分红", icon: "💰", desc: "结算工资/金币获取 +8% / 级", maxLevel: 10, valPerLvl: 0.08, unit: "%", prices: [120, 220, 360, 540, 780, 1080, 1450, 1900, 2500, 3200] }
+    ]
+  },
+  weapon: {
+    title: "⚔️ 武器全局属性",
+    items: [
+      { id: "weapon_damage", name: "武器精通", icon: "🗡️", desc: "所有武器伤害 +5% / 级", maxLevel: 10, valPerLvl: 0.05, unit: "%", prices: [110, 200, 320, 480, 680, 940, 1260, 1650, 2150, 2800] },
+      { id: "attack_speed", name: "攻击频率", icon: "⚡", desc: "全武器攻击攻速提升 / 冷却 -4% / 级", maxLevel: 10, valPerLvl: 0.04, unit: "%", prices: [120, 220, 350, 520, 740, 1020, 1360, 1780, 2300, 3000] },
+      { id: "aoe_range", name: "范围扩散", icon: "💥", desc: "全范围攻击 / 爆炸 / 扫荡面积 +6% / 级", maxLevel: 10, valPerLvl: 0.06, unit: "%", prices: [100, 190, 300, 450, 640, 880, 1180, 1550, 2000, 2600] },
+      { id: "bullet_speed", name: "弹道强化", icon: "🚀", desc: "飞行速度 +6%，投掷射程提升 / 级", maxLevel: 10, valPerLvl: 0.06, unit: "%", prices: [80, 150, 240, 360, 510, 700, 940, 1240, 1600, 2100] },
+      { id: "knockback_power", name: "击退冲击", icon: "🛡️", desc: "武器击退力度 +8%，推开怪群 / 级", maxLevel: 10, valPerLvl: 0.08, unit: "%", prices: [90, 160, 260, 390, 550, 760, 1020, 1340, 1740, 2250] },
+      { id: "evo_resonance", name: "超武共鸣", icon: "✨", desc: "超级进化与组合共鸣核爆伤害 +8% / 级", maxLevel: 10, valPerLvl: 0.08, unit: "%", prices: [140, 260, 420, 620, 880, 1200, 1600, 2100, 2750, 3600] }
+    ]
+  }
 };
 
-// 一周 6 大完整关卡与 6 大专属 Boss 体系 (周一至周五 + 周末特别篇)
+// 保持旧 TALENTS 的兼容映射
+export const TALENTS = {
+  health_check: { id: "health_check", name: "体检报告", icon: "📋", desc: "最大生命 +5% / 级", maxLevel: 10, valPerLvl: 0.05, prices: [100, 180, 280, 420, 600, 820, 1100, 1450, 1900, 2500] },
+  skilled_worker: { id: "skilled_worker", name: "熟练工", icon: "🔧", desc: "全武器伤害 +5% / 级", maxLevel: 10, valPerLvl: 0.05, prices: [110, 200, 320, 480, 680, 940, 1260, 1650, 2150, 2800] },
+  fast_runner: { id: "fast_runner", name: "跑得快", icon: "🏃", desc: "移动速度 +3% / 级", maxLevel: 10, valPerLvl: 0.03, prices: [90, 160, 250, 380, 540, 750, 1000, 1300, 1700, 2200] },
+  slacker_xp: { id: "slacker_xp", name: "摸鱼经验", icon: "💡", desc: "经验获取 +5% / 级", maxLevel: 10, valPerLvl: 0.05, prices: [100, 180, 290, 440, 630, 880, 1180, 1550, 2000, 2600] },
+  mental_construction: { id: "mental_construction", name: "心理建设", icon: "🧘", desc: "受击压力增加 -5% / 级", maxLevel: 10, valPerLvl: 0.05, prices: [110, 200, 320, 480, 680, 920, 1250, 1650, 2150, 2800] }
+};
+
+// 一周关卡与无尽模式体系 (通关解锁下一关)
 export const STAGES_CONFIG = {
   stage_1: {
     id: "stage_1",
@@ -783,8 +805,10 @@ export const STAGES_CONFIG = {
     mapWidth: 48 * M_TO_PX,
     mapHeight: 36 * M_TO_PX,
     duration: 480,
+    unlockReqText: "初始已解锁",
     boss: {
       id: "supervisor",
+      type: "supervisor",
       name: "部门主管",
       title: "终极加班推手",
       icon: "👹",
@@ -814,13 +838,15 @@ export const STAGES_CONFIG = {
     mapWidth: 50 * M_TO_PX,
     mapHeight: 38 * M_TO_PX,
     duration: 480,
+    unlockReqText: "通关【星期一】解锁",
     boss: {
       id: "project_director",
+      type: "project_director",
       name: "项目总监",
       title: "PPT连环对齐狂人",
       icon: "🧛‍♂️",
-      hp: 4000,
-      damage: 19,
+      hp: 4200,
+      damage: 20,
       dmgReduction: 0.16,
       speed: 1.45 * M_TO_PX,
       size: 36,
@@ -835,20 +861,22 @@ export const STAGES_CONFIG = {
   },
   stage_3: {
     id: "stage_3",
-    name: "星期三 · 客户现场现场",
-    subtitle: "甲方爸爸的“五彩斑斓的黑”与反复改稿",
+    name: "星期三 · 客户现场",
+    subtitle: "改稿无底洞与“五彩斑斓的黑”",
     bgFloor: "#241c2c",
     gridColor: "#3d2a4a",
     mapWidth: 50 * M_TO_PX,
     mapHeight: 38 * M_TO_PX,
     duration: 480,
+    unlockReqText: "通关【星期二】解锁",
     boss: {
-      id: "client_boss",
-      name: "甲方爸爸",
-      title: "五彩斑斓黑的需求暴君",
-      icon: "👑",
-      hp: 4500,
-      damage: 20,
+      id: "demanding_client",
+      type: "demanding_client",
+      name: "刁难的客户",
+      title: "改稿无底洞 · 致命甲方",
+      icon: "🧐",
+      hp: 4800,
+      damage: 22,
       dmgReduction: 0.18,
       speed: 1.5 * M_TO_PX,
       size: 38,
@@ -863,86 +891,130 @@ export const STAGES_CONFIG = {
   },
   stage_4: {
     id: "stage_4",
-    name: "星期四 · 云端数据中心",
-    subtitle: "404崩溃红屏与全天候内存泄露死锁",
+    name: "星期四 · 运营与通信中心",
+    subtitle: "夺命连环Call与全天候电波轰炸",
     bgFloor: "#091e28",
-    gridColor: "#11384c",
+    gridColor: "#133544",
     mapWidth: 52 * M_TO_PX,
     mapHeight: 40 * M_TO_PX,
     duration: 480,
+    unlockReqText: "通关【星期三】解锁",
     boss: {
-      id: "devops_overlord",
-      name: "运维魔王",
-      title: "404全屏崩溃之神",
-      icon: "👾",
+      id: "harassment_call",
+      type: "harassment_call",
+      name: "骚扰电话",
+      title: "夺命连环Call · 精神污染源",
+      icon: "📞",
       hp: 5200,
-      damage: 22,
-      dmgReduction: 0.20,
+      damage: 24,
+      dmgReduction: 0.18,
       speed: 1.55 * M_TO_PX,
       size: 38,
       color: "#06b6d4"
     },
     timeline: [
-      { start: 0, end: 80, budget: 16, hpMult: 1.12, dmgMult: 1.08, enemies: ["zombie_colleague", "phone_monster", "red_dot"], desc: "高频报警与红点轰炸" },
-      { start: 80, end: 200, budget: 26, hpMult: 1.30, dmgMult: 1.15, enemies: ["printer", "mail_monster", "demand_ball"], desc: "数据洪流与打印机炮火" },
-      { start: 200, end: 480, budget: 48, hpMult: 1.78, dmgMult: 1.30, enemies: ["demand_ball", "meeting_monster", "red_dot", "phone_monster"], desc: "内存溢出全屏死锁" }
+      { start: 0, end: 60, budget: 15, hpMult: 1.12, dmgMult: 1.06, enemies: ["phone_monster", "printer"], desc: "高频声波与打印弹幕" },
+      { start: 60, end: 180, budget: 24, hpMult: 1.28, dmgMult: 1.12, enemies: ["phone_monster", "mail_monster", "demand_ball"], desc: "电话怪与邮件混合封锁" },
+      { start: 180, end: 340, budget: 35, hpMult: 1.48, dmgMult: 1.20, enemies: ["phone_monster", "meeting_monster", "red_dot", "printer"], desc: "声波减速与红点狂飙" },
+      { start: 340, end: 480, budget: 50, hpMult: 1.80, dmgMult: 1.30, enemies: ["phone_monster", "demand_ball", "red_dot", "meeting_monster"], desc: "全机房失控高潮" }
     ]
   },
   stage_5: {
     id: "stage_5",
     name: "星期五 · 总裁董事办公室",
-    subtitle: "终极画饼风暴与周五晚8点紧急复盘",
-    bgFloor: "#2a1b18",
-    gridColor: "#472b26",
-    mapWidth: 54 * M_TO_PX,
-    mapHeight: 42 * M_TO_PX,
+    subtitle: "大饼画满天、期权全画饼的终极资本家",
+    bgFloor: "#23180c",
+    gridColor: "#3d2a14",
+    mapWidth: 52 * M_TO_PX,
+    mapHeight: 40 * M_TO_PX,
     duration: 480,
+    unlockReqText: "通关【星期四】解锁",
     boss: {
       id: "ceo_bigboss",
+      type: "ceo_bigboss",
       name: "大老板·CEO",
-      title: "终极大饼画师",
-      icon: "🎩",
-      hp: 6000,
-      damage: 24,
-      dmgReduction: 0.22,
-      speed: 1.6 * M_TO_PX,
+      title: "资本大饼造梦师",
+      icon: "👑",
+      hp: 5800,
+      damage: 25,
+      dmgReduction: 0.20,
+      speed: 1.55 * M_TO_PX,
       size: 40,
       color: "#eab308"
     },
     timeline: [
-      { start: 0, end: 90, budget: 18, hpMult: 1.18, dmgMult: 1.10, enemies: ["file_monster", "mail_monster", "zombie_colleague"], desc: "期权公文堆叠" },
-      { start: 90, end: 220, budget: 30, hpMult: 1.40, dmgMult: 1.20, enemies: ["printer", "meeting_monster", "demand_ball"], desc: "裁员优化风暴" },
-      { start: 220, end: 480, budget: 52, hpMult: 1.88, dmgMult: 1.35, enemies: ["demand_ball", "red_dot", "phone_monster", "meeting_monster"], desc: "上市敲钟极限压榨" }
+      { start: 0, end: 60, budget: 16, hpMult: 1.15, dmgMult: 1.08, enemies: ["zombie_colleague", "demand_ball"], desc: "高压加班大军涌入" },
+      { start: 60, end: 180, budget: 26, hpMult: 1.32, dmgMult: 1.14, enemies: ["file_monster", "printer", "mail_monster"], desc: "文件暴风雨与大炮台" },
+      { start: 180, end: 320, budget: 38, hpMult: 1.55, dmgMult: 1.22, enemies: ["meeting_monster", "phone_monster", "demand_ball"], desc: "连环战略对齐" },
+      { start: 320, end: 480, budget: 54, hpMult: 1.90, dmgMult: 1.35, enemies: ["zombie_colleague", "demand_ball", "red_dot", "printer", "meeting_monster"], desc: "下班前最后一波资本狂潮" }
     ]
   },
   stage_6: {
     id: "stage_6",
     name: "周末特别篇 · 强制公司团建",
-    subtitle: "极限拓展训练、破冰游戏与感恩洗脑导师",
-    bgFloor: "#1c2a1a",
-    gridColor: "#2b4028",
-    mapWidth: 56 * M_TO_PX,
-    mapHeight: 44 * M_TO_PX,
+    subtitle: "打着放松旗号的折磨爬山与狼性拓展",
+    bgFloor: "#142316",
+    gridColor: "#1d3820",
+    mapWidth: 54 * M_TO_PX,
+    mapHeight: 42 * M_TO_PX,
     duration: 480,
+    unlockReqText: "通关【星期五】解锁",
     boss: {
       id: "teambuilding_coach",
+      type: "teambuilding_coach",
       name: "团建魔鬼教练",
-      title: "极限拓展与感恩导师",
-      icon: "📣",
-      hp: 7200,
+      title: "狼性文化总教官",
+      icon: "🦹‍♂️",
+      hp: 6500,
       damage: 26,
-      dmgReduction: 0.25,
+      dmgReduction: 0.22,
       speed: 1.65 * M_TO_PX,
       size: 42,
-      color: "#16a34a"
+      color: "#15803d"
     },
     timeline: [
-      { start: 0, end: 90, budget: 20, hpMult: 1.22, dmgMult: 1.12, enemies: ["zombie_colleague", "phone_monster", "red_dot"], desc: "破冰游戏全员冲刺" },
-      { start: 90, end: 240, budget: 34, hpMult: 1.50, dmgMult: 1.25, enemies: ["meeting_monster", "demand_ball", "printer"], desc: "拓展器械与高空摔跤" },
-      { start: 240, end: 480, budget: 58, hpMult: 2.00, dmgMult: 1.45, enemies: ["demand_ball", "red_dot", "meeting_monster", "phone_monster"], desc: "真情流露绝地求生" }
+      { start: 0, end: 60, budget: 18, hpMult: 1.20, dmgMult: 1.10, enemies: ["zombie_colleague", "red_dot"], desc: "强制徒步拉练" },
+      { start: 60, end: 180, budget: 28, hpMult: 1.40, dmgMult: 1.18, enemies: ["meeting_monster", "demand_ball", "file_monster"], desc: "破冰游戏与信任背摔" },
+      { start: 180, end: 320, budget: 42, hpMult: 1.68, dmgMult: 1.26, enemies: ["phone_monster", "printer", "demand_ball"], desc: "全员狼性宣誓" },
+      { start: 320, end: 480, budget: 60, hpMult: 2.10, dmgMult: 1.40, enemies: ["zombie_colleague", "red_dot", "meeting_monster", "demand_ball", "phone_monster"], desc: "魔鬼拉练终极考核" }
+    ]
+  },
+  stage_endless: {
+    id: "stage_endless",
+    name: "无尽模式 · 通宵加班",
+    subtitle: "没有下班时间！怪物随时间无限狂暴增长，随机强力Boss轮番突袭！",
+    bgFloor: "#0f172a",
+    gridColor: "#1e293b",
+    mapWidth: 56 * M_TO_PX,
+    mapHeight: 44 * M_TO_PX,
+    duration: Infinity,
+    isEndless: true,
+    unlockReqText: "通关【星期一】即可开启无尽挑战",
+    boss: {
+      id: "random_endless_boss",
+      type: "demanding_client",
+      name: "突袭强力Boss",
+      title: "通宵狂暴主宰",
+      icon: "⚡👹",
+      hp: 5000,
+      damage: 25,
+      dmgReduction: 0.20,
+      speed: 1.5 * M_TO_PX,
+      size: 38,
+      color: "#f43f5e"
+    },
+    timeline: [
+      { start: 0, end: 999999, budget: 20, hpMult: 1.0, dmgMult: 1.0, enemies: ["zombie_colleague", "file_monster", "mail_monster", "meeting_monster", "phone_monster", "printer", "demand_ball", "red_dot"], desc: "无尽狂潮" }
     ]
   }
 };
 
-// 兼容旧接口 BOSS_CONFIG
+export const RANDOM_BOSS_ROSTER = [
+  { id: "supervisor", type: "supervisor", name: "部门主管", title: "终极加班推手", icon: "👹", hp: 3600, damage: 18, color: "#b91c1c", speed: 1.4 * M_TO_PX },
+  { id: "project_director", type: "project_director", name: "项目总监", title: "PPT连环对齐狂人", icon: "🧛‍♂️", hp: 4200, damage: 20, color: "#6366f1", speed: 1.45 * M_TO_PX },
+  { id: "demanding_client", type: "demanding_client", name: "刁难的客户", title: "改稿无底洞 · 致命甲方", icon: "🧐", hp: 4800, damage: 22, color: "#ec4899", speed: 1.5 * M_TO_PX },
+  { id: "harassment_call", type: "harassment_call", name: "骚扰电话", title: "夺命连环Call · 精神污染源", icon: "📞", hp: 5200, damage: 24, color: "#06b6d4", speed: 1.55 * M_TO_PX },
+  { id: "ceo_bigboss", type: "ceo_bigboss", name: "大老板·CEO", title: "资本大饼造梦师", icon: "👑", hp: 5800, damage: 25, color: "#eab308", speed: 1.55 * M_TO_PX }
+];
+
 export const BOSS_CONFIG = STAGES_CONFIG.stage_1.boss;
