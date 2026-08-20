@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>今天也不想上班 - 动作肉鸽战斗系统 V1.4</title>
+  <title>今天也不想上班 - 动作肉鸽战斗系统 V1.5</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -76,17 +76,17 @@
     <!-- 主菜单 -->
     <div id="main-menu">
       <div class="game-logo">今天也不想上班</div>
-      <div class="game-sub">8分钟办公室动作肉鸽 · Build构筑与高压爆发 (V1.4)</div>
+      <div class="game-sub">全自动智能索敌 · 8大武器库 & 冰火核爆 · 员工晋升 · 无尽模式 (V1.5)</div>
       <div class="menu-buttons">
         <button id="btn-start-game" class="btn" style="padding: 12px 24px; font-size: 15px;">🚀 开始下班 (进入游戏)</button>
         <button id="btn-open-characters" class="btn btn-secondary">🎭 职业角色 (小陈/阿伟/莉莉/小张)</button>
-        <button id="btn-open-stages" class="btn btn-secondary">🏢 关卡选择 (周一至周五+周末)</button>
-        <button id="btn-open-talents" class="btn btn-secondary">📋 局外天赋 (提升打工属性)</button>
-        <button id="btn-open-guide" class="btn btn-secondary">📖 职场生存指南 (操作与武器说明)</button>
+        <button id="btn-open-stages" class="btn btn-secondary">🏢 关卡选择 (周一至周末 + 无尽加班)</button>
+        <button id="btn-open-talents" class="btn btn-secondary">📋 员工晋升 (提升角色与武器属性)</button>
+        <button id="btn-open-guide" class="btn btn-secondary">📖 职场生存指南 (操作、武器与Boss)</button>
       </div>
     </div>
 
-    <!-- 角色选择弹窗 (支持上下滑动与返回按钮) -->
+    <!-- 角色选择弹窗 -->
     <div id="character-modal" class="modal-overlay">
       <div class="modal-content">
         <button id="btn-close-char-x" class="modal-close-x">✕</button>
@@ -105,7 +105,7 @@
       <div class="modal-content">
         <button id="btn-close-stage-x" class="modal-close-x">✕</button>
         <div class="modal-title">🏢 选择挑战关卡</div>
-        <div class="modal-subtitle">完整一周工作日体系：周一至周五 + 周末特别篇（各具专属Boss）</div>
+        <div class="modal-subtitle">通关逐级解锁 · 周一至周末 + 无尽模式（各具专属Boss与地形机制）</div>
         <div id="stage-cards-container" class="stage-grid"></div>
         <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
           <button id="btn-close-stages" class="btn">确定关卡</button>
@@ -134,7 +134,7 @@
     <div id="levelup-modal" class="modal-overlay">
       <div class="modal-content">
         <div class="modal-title">🎉 工作能力提升！</div>
-        <div class="modal-subtitle">选择一项工作技能或进化超级武器</div>
+        <div class="modal-subtitle">选择一项工作技能、新武器或进化超级武器</div>
         <div id="levelup-cards" class="card-container"></div>
         <button id="levelup-reroll-btn" class="btn btn-secondary">刷新选项 (1次免费)</button>
       </div>
@@ -200,14 +200,14 @@
       </div>
     </div>
 
-    <!-- 局外天赋弹窗 -->
+    <!-- 员工晋升与属性研习弹窗 -->
     <div id="talent-modal" class="modal-overlay">
       <div class="modal-content">
         <button id="btn-close-talent-x" class="modal-close-x">✕</button>
-        <div class="modal-title">📋 局外天赋提升</div>
+        <div class="modal-title">📋 员工晋升与属性研习</div>
         <div id="talent-gold" class="modal-subtitle" style="color: #fbbf24; font-weight: bold;">当前存款工资：¥ 0</div>
         <div id="talent-list" class="talent-list"></div>
-        <button id="btn-close-talents" class="btn">返回</button>
+        <button id="btn-close-talents" class="btn" style="margin-top: 10px;">返回主页</button>
       </div>
     </div>
 
@@ -215,24 +215,34 @@
     <div id="guide-modal" class="modal-overlay">
       <div class="modal-content" style="text-align: left;">
         <button id="btn-close-guide-x" class="modal-close-x">✕</button>
-        <div class="modal-title" style="text-align: center;">📖 职场生存与全武器指南</div>
+        <div class="modal-title" style="text-align: center;">📖 职场生存与全武器指南 (V1.5)</div>
         <div style="font-size: 11px; line-height: 1.6; color: #cbd5e1; margin-bottom: 14px; max-height: 60vh; overflow-y: auto;">
-          <p><b>【六大核心武器】</b></p>
-          <p>• <b>机械键盘：</b> 远程高频单发，升级加弹道。进化：<b>祖安机械键盘</b>（连锁“？？？”爆炸）。</p>
-          <p>• <b>马克杯：</b> 环绕自身近身绞杀。进化：<b>无限续杯</b>（周期释放咖啡冲击波击退全怪）。</p>
-          <p>• <b>辞职信：</b> 抛射大范围公文，落地留下2秒腐蚀水洼。进化：<b>辞职报告</b>（全屏密集处巨力砸落）。</p>
-          <p>• <b>降噪耳机：</b> 环形声波脉冲（初始2.2m），穿透击退全怪。进化：<b>降噪核爆耳机</b>（震碎敌方弹道）。</p>
-          <p>• <b>养生水杯：</b> 投掷水杯落地碎裂，形成2秒烫水水洼。进化：<b>高压八杯水领域</b>（全场暴雨回血）。</p>
-          <p>• <b>快充充电线：</b> 1秒近战电鞭横扫（初始2.2m）。进化：<b>超导快充高压鞭</b>（全屏超导雷击+电网）。</p>
+          <p><b>【全自动索敌机制】</b></p>
+          <p>• 所有武器均已升级为<b>全场景智能自动索敌</b>，优先攻击敌人聚集密度最高、威胁最大的区域，无需手动对准方向，专注移动与走位！</p>
           <br>
-          <p><b>【四大职业特性】</b></p>
-          <p>• <b>小陈 (运营)：</b> 升级加速摸鱼；主动【疯狂输出】攻速+70% 伤害+25%。</p>
-          <p>• <b>阿伟 (开发)：</b> 击杀引爆内存代码；主动【系统崩溃】全屏冻结3秒+电击伤害。</p>
-          <p>• <b>莉莉 (设计)：</b> 天生高暴击率与暴击伤害；主动【改稿风暴】调色盘旋风绞杀全场。</p>
-          <p>• <b>小张 (实习)：</b> 经验获取+30%，高概率出稀有词条；主动【假装很忙】隐身无敌洒咖啡豆。</p>
+          <p><b>【八大核心武器与超级进化】</b></p>
+          <p>• <b>人体工学椅 (新)：</b> 诺手Q式360°旋转大杀四方！每5秒狂暴横扫一圈，外圈造成巨额暴击伤害、强力击退并恢复摸鱼值与生命！进化：<b>老板真皮按摩椅</b>（全方位气动旋风斩+气动护盾）。</p>
+          <p>• <b>空调·制冷 (新)：</b> 喷射极寒冷气，伤害较低但可将命中的敌人<b>冻结 1.0 秒</b>（完全定身停止移动与攻击）并附加减速！</p>
+          <p>• <b>空调·制热 (新)：</b> 喷射滚烫热风波，高额初始伤害并对敌人附加<b>持续灼烧热伤害（DoT）</b>！</p>
+          <p>• <b>💥 中央空调·冰火两重天 (共鸣超武)：</b> 同时拥有制冷与制热模式时激活！周期性在最密集敌群引爆大范围<b>冷热对流核爆（范围爆炸攻击）</b>，对冻结敌人造成双倍碎冰毁灭暴击并点燃全场！</p>
+          <p>• <b>机械键盘：</b> 远程高射速键帽，自动追踪敌群。进化：<b>祖安机械键盘</b>（连锁“？？？”爆炸）。</p>
+          <p>• <b>马克杯：</b> 大范围环绕扫荡与咖啡水花溅射。进化：<b>无限续杯</b>（周期释放4米咖啡冲击波）。</p>
+          <p>• <b>辞职信：</b> 自动锁定密集敌群抛射公文袋轰炸，留下腐蚀水洼。进化：<b>辞职报告</b>（全屏密集处巨力砸落）。</p>
+          <p>• <b>降噪耳机：</b> 360° 全方位高频声波震荡穿透全怪。进化：<b>降噪核爆耳机</b>（震碎敌方弹道）。</p>
+          <p>• <b>养生水杯：</b> 自动向敌群投掷水杯落地碎裂，形成大水洼。进化：<b>高压八杯水领域</b>（全场暴雨回血）。</p>
+          <p>• <b>快充充电线：</b> 自动向敌群扇形横扫高压电弧 + 链式闪电弹跳。进化：<b>超导快充高压鞭</b>（全屏超导雷击+电网）。</p>
           <br>
-          <p><b>【全周六大关卡与Boss】</b></p>
-          <p>• 周一 (部门主管) ➔ 周二 (项目总监) ➔ 周三 (甲方爸爸) ➔ 周四 (运维魔王) ➔ 周五 (大老板·CEO) ➔ 周末 (团建魔鬼教练)</p>
+          <p><b>【全周关卡、无尽模式与强力Boss】</b></p>
+          <p>• <b>关卡解锁体系：</b> 通关前置关卡即可解锁下一关，挑战逐步升级！</p>
+          <p>• <b>周一 (部门主管)：</b> 文件雨轰炸与紧急需求连发。</p>
+          <p>• <b>周二 (项目总监)：</b> PPT激光网与连环对齐会。</p>
+          <p>• <b>周三 (刁难的客户 - 新Boss)：</b> 划定“需求红线”封锁禁行区、砸下“巨型合同柱”可破坏障碍物限制移动、释放“方案打回”引力黑洞！</p>
+          <p>• <b>周四 (骚扰电话 - 新Boss)：</b> 植入“响铃分机”减速声波塔、震裂地面形成电波断层、“夺命连环call”追踪弹幕与全屏EMP脉冲！</p>
+          <p>• <b>周五 (大老板·CEO) & 周末 (团建魔鬼教练)</b></p>
+          <p>• <b>🔥 无尽模式 · 通宵加班：</b> 没有下班时间上限！怪物随时间无限狂暴成长，每90秒随机刷新强力Boss轮番突袭，挑战你的最高生存极限！</p>
+          <br>
+          <p><b>【员工晋升与属性研习系统】</b></p>
+          <p>• 消耗打工赚取的工资存款，分别强化<b>【角色个人属性】</b>（生命、移速、回血、抗压、拾取、暴击、悟性、薪资）与<b>【武器全局属性】</b>（武器伤害、攻速CD、范围AoE、弹速、击退、超武共鸣），并支持随时一键全额重置退款！</p>
         </div>
         <div style="text-align: center;">
           <button id="btn-close-guide" class="btn">我明白了</button>
